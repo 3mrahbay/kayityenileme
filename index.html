@@ -771,6 +771,9 @@ input.price-input { font-size:22px; font-weight:600; font-family:'Playfair Displ
       <div class="welcome-name">Hoş geldiniz! 🌸</div>
       <div class="welcome-sub" id="welcomeEmail">–</div>
       <div class="deadline-pill">⏰ Avantajlı Erken Kayıt: 30 Nisan 2026'ya kadar</div>
+      <div style="margin-top:16px; background:rgba(255,255,255,0.1); border-radius:12px; padding:14px 18px; font-size:13px; color:rgba(255,255,255,0.88); line-height:1.65;">
+        📋 Milli Eğitim Bakanlığı'nın 2026-2027 dönemi için belirlediği artış oranı <strong>%43,92</strong>'dir. Bir Çiçek Koleji olarak ailelerimizin bütçelerini desteklemek adına artış oranımızı <strong>%28</strong> olarak uyguluyor; ayrıca I. dönem ödemelerinizi daha düşük, II. dönem ödemelerinizi ise Ocak maaş artışlarınızla örtüşecek şekilde yapılandırıyoruz.
+      </div>
     </div>
 
     <div class="action-cards">
@@ -838,9 +841,9 @@ input.price-input { font-size:22px; font-weight:600; font-family:'Playfair Displ
           <label>Sınıf</label>
           <select id="childClass">
             <option value="">Seçiniz</option>
-            <option value="toddler">Toddler (25-36 ay)</option>
-            <option value="anaokulu1">Anaokulu 1 (36-72 ay)</option>
-            <option value="anaokulu2">Anaokulu 2 (36-72 ay)</option>
+            <option value="papatyalar">Montessori Papatyalar Toddler Sınıfı (25-36 Ay)</option>
+            <option value="kardelenler">Montessori Kardelenler Sınıfı (36-72 Ay)</option>
+            <option value="narcicekleri">Montessori Nar Çiçekleri Sınıfı (36-72 Ay)</option>
           </select>
         </div>
       </div>
@@ -882,11 +885,8 @@ input.price-input { font-size:22px; font-weight:600; font-family:'Playfair Displ
         <label>Telefon</label>
         <input type="tel" id="parentPhone" placeholder="0532 xxx xx xx">
       </div>
-      <div class="field">
-        <label>Referans Kodunuz Var Mı? (İsteğe bağlı)</label>
-        <input type="text" id="referansKodGiris" placeholder="BCK-XXXX" maxlength="8" style="text-transform:uppercase; letter-spacing:2px;">
-        <div class="price-hint">Sizi yönlendiren velinin referans kodu (varsa)</div>
-      </div>
+      <!-- Referans kodu sadece yeni veliler için - mevcut velilerde gösterilmez -->
+      <input type="hidden" id="referansKodGiris" value="">
     </div>
 
     <div class="form-actions">
@@ -926,8 +926,8 @@ input.price-input { font-size:22px; font-weight:600; font-family:'Playfair Displ
         </div>
       </div>
       <div class="aylik-breakdown">
-        <div class="aylik-br-item"><span>Eğitim Ücreti (%60)</span><strong id="egitimDisplay">–</strong></div>
-        <div class="aylik-br-item"><span>Yemek Ücreti (%40)</span><strong id="yemekDisplay">–</strong></div>
+        <div class="aylik-br-item"><span>Eğitim Ücreti</span><strong id="egitimDisplay">–</strong></div>
+        <div class="aylik-br-item"><span>Yemek Ücreti</span><strong id="yemekDisplay">–</strong></div>
         <div class="aylik-br-item"><span>I. Dönem Aylık</span><strong id="iDonemDisplay">–</strong></div>
         <div class="aylik-br-item"><span>II. Dönem Aylık</span><strong id="iiDonemDisplay">–</strong></div>
       </div>
@@ -1006,23 +1006,35 @@ input.price-input { font-size:22px; font-weight:600; font-family:'Playfair Displ
         <div class="kod-text" id="referansKodDisplay">BCK-????</div>
         <button class="btn-copy" onclick="copyKod()">Kopyala</button>
       </div>
+      <div style="margin-top:16px; background:rgba(0,0,0,0.15); border-radius:10px; padding:12px 14px; font-size:12px; color:rgba(255,255,255,0.7); line-height:1.6;">
+        ℹ️ <em>Ekim ayına kadar referanslı gelen kayıtlarda indirim kabul edilir. İndirim yapılan ödemeler tahsil edildiyse son iki aydaki ödemelerden mahsuplaşılır.</em>
+      </div>
       <div class="referans-steps mt-16">
         <div class="referans-step">
           <div class="step-num">1</div>
-          <div class="step-text"><strong>1. Kayıt:</strong> I. Dönem Orman Okulu Servis ücreti (9.000 TL) hediye!</div>
+          <div class="step-text"><strong>1. Kayıt:</strong> I. Dönem Orman Okulu Servis ücreti (9.000 TL) — <strong>alınmaz!</strong></div>
         </div>
         <div class="referans-step">
           <div class="step-num">2</div>
-          <div class="step-text"><strong>2. Kayıt:</strong> II. Dönem Orman Okulu Servis ücreti (10.000 TL) hediye!</div>
+          <div class="step-text"><strong>2. Kayıt:</strong> II. Dönem Orman Okulu Servis ücreti (10.000 TL) — <strong>alınmaz!</strong></div>
         </div>
         <div class="referans-step">
           <div class="step-num">3</div>
-          <div class="step-text"><strong>3. Kayıt:</strong> Eğitim Materyalleri ücreti (35.000 TL) hediye!</div>
+          <div class="step-text"><strong>3. Kayıt:</strong> Eğitim Materyalleri ücreti (35.000 TL) — <strong>alınmaz!</strong></div>
         </div>
       </div>
     </div>
 
     <!-- Save card -->
+    <!-- Fatura tercihi -->
+    <div style="background:var(--white); border:1px solid var(--border); border-radius:var(--radius); padding:24px; margin-bottom:16px;">
+      <div style="font-size:14px; font-weight:700; color:var(--forest); margin-bottom:12px;">📧 Fatura Tercihi</div>
+      <label style="display:flex; align-items:flex-start; gap:12px; cursor:pointer; font-weight:400;">
+        <input type="checkbox" id="faturaCheckbox" style="width:18px; height:18px; margin-top:2px; accent-color:var(--forest); flex-shrink:0;">
+        <span style="font-size:13px; color:var(--text-mid); line-height:1.6;">Yıllık gider planlamam için faturalarımın düzenli olarak mail adresime gönderilmesini rica ediyorum.</span>
+      </label>
+    </div>
+
     <div class="save-card mt-24">
       <div style="font-family:'Playfair Display',serif; font-size:20px; font-weight:700; color:var(--forest); margin-bottom:8px;">Kaydı Tamamlayın</div>
       <div class="save-note">Kaydet butonuna bastığınızda:</div>
@@ -1168,6 +1180,8 @@ auth.onAuthStateChanged(user => {
 
 function onLogin(user) {
   currentUser = user;
+  // Giriş takibi — okul mailine bilgi
+  logGiris(user);
   const name = user.displayName || user.email;
   const parts = (user.displayName || "").split(" ");
   const initial = parts[0]?.[0]?.toUpperCase() || "?";
@@ -1227,8 +1241,12 @@ function updatePreview() {
   const preview = document.getElementById("pricePreview");
   const previewVal = document.getElementById("previewVal");
   if (!val || val < 1000) { if(preview) preview.style.display = "none"; return; }
-  let yeni = Math.round(val * 1.28);
-  if (appState.program === "yarimgun") yeni = Math.round(yeni * 0.8);
+  let yeni;
+  if (appState.program === "yarimgun") {
+    yeni = Math.round(val * 0.8 * 1.28);
+  } else {
+    yeni = Math.round(val * 1.28);
+  }
   if(preview) preview.style.display = "flex";
   if(previewVal) previewVal.textContent = fmt(yeni) + " TL";
 }
@@ -1237,8 +1255,13 @@ function updatePreview() {
 // ÖDEME HESAPLAMA
 // ═══════════════════════════════════════════════════════
 function hesapla(mevcutAylik, program) {
-  let yeniAylik = Math.round(mevcutAylik * 1.28);
-  if (program === "yarimgun") yeniAylik = Math.round(yeniAylik * 0.8);
+  // Yarım gün: önce yarım gün tabanını bul (mevcut*0.8), sonra %28 artır
+  let yeniAylik;
+  if (program === "yarimgun") {
+    yeniAylik = Math.round(mevcutAylik * 0.8 * 1.28);
+  } else {
+    yeniAylik = Math.round(mevcutAylik * 1.28);
+  }
 
   const egitim = Math.round(yeniAylik * 0.60);
   const yemek  = yeniAylik - egitim;
@@ -1408,6 +1431,7 @@ function buildKayitData() {
     referansKoduKullanildi: document.getElementById("referansKodGiris")?.value?.trim() || "",
     referansliGeliyor: appState.referansliGeliyor,
     kiyafetUcretsiz:   appState.referansliGeliyor,
+    faturaIstegi: document.getElementById("faturaCheckbox")?.checked || false,
     kayitTarihi: new Date().toISOString(),
     durum: "beklemede"
   };
@@ -1425,35 +1449,141 @@ async function handleReferansKayit(kullanilanKod) {
 }
 
 // ═══════════════════════════════════════════════════════
+// GİRİŞ TAKİBİ
+// ═══════════════════════════════════════════════════════
+async function logGiris(user) {
+  try {
+    await db.collection("girisler").add({
+      email: user.email,
+      displayName: user.displayName || "",
+      girisZamani: new Date().toISOString(),
+      uid: user.uid
+    });
+    // Okul mailine bildirim
+    emailjs.init(EMAILJS_CONFIG.publicKey);
+    const zaman = new Date().toLocaleString("tr-TR");
+    await emailjs.send(EMAILJS_CONFIG.serviceId, EMAILJS_CONFIG.templateId, {
+      to_email: SCHOOL_EMAIL,
+      cocuk_adi: "Sistem Girişi",
+      mesaj: `SİSTEM GİRİŞ BİLDİRİMİ\n---\nMail: ${user.email}\nAd: ${user.displayName || "Bilinmiyor"}\nZaman: ${zaman}\n---\nBu kullanıcı kayıt yenileme sistemine giriş yaptı. Kayıt tamamlanmadıysa takip edilebilir.`
+    });
+  } catch(e) { console.log("Giriş takip hatası (önemsiz):", e); }
+}
+
+// ═══════════════════════════════════════════════════════
 // EMAİL GÖNDERME (EmailJS)
 // ═══════════════════════════════════════════════════════
 async function sendEmail(data) {
   emailjs.init(EMAILJS_CONFIG.publicKey);
   const h = appState.hesaplama;
+  const fatura = data.faturaIstegi ? "EVET - Fatura maile gönderilsin" : "Hayır";
 
-  const templateParams = {
-    to_email:       SCHOOL_EMAIL,
-    from_name:      (data.parentFirstName + " " + data.parentLastName).trim() || data.displayName,
-    veli_email:     data.email,
-    veli_telefon:   data.phone,
-    cocuk_adi:      data.childFirstName + " " + data.childLastName,
-    cocuk_sinif:    data.childClass,
-    cocuk_dogum:    data.childBirthDate,
-    program_tur:    data.program === "tamgun" ? "Tam Gun" : "Yarim Gun",
-    mevcut_ucret:   fmt(data.mevcutAylikUcret) + " TL",
-    yeni_aylik:     fmt(data.yeniAylikUcret)   + " TL",
-    on_odeme:       fmt(data.onOdeme)           + " TL",
-    i_donem:        fmt(data.iDonemAylik)       + " TL/ay (Eylul-Ocak)",
-    ii_donem:       fmt(data.iiDonemAylik)      + " TL/ay (Subat-Haziran)",
-    yillik_toplam:  fmt(data.yillikToplam)      + " TL",
-    referans_kodu:  data.referansKodu,
-    ref_kullanildi: data.referansKoduKullanildi || "Yok",
-    kiyafet_durum:  data.kiyafetUcretsiz ? "UCRETSIZ (referans)" : "5.500 TL",
-    kayit_tarihi:   new Date().toLocaleString("tr-TR"),
-    mesaj: `KAYIT YENİLEME BAŞVURUSU\n---\nVeli: ${data.parentFirstName} ${data.parentLastName}\nEmail: ${data.email}\nTelefon: ${data.phone}\n---\nCocuk: ${data.childFirstName} ${data.childLastName}\nSinif: ${data.childClass} | Dogum: ${data.childBirthDate}\nProgram: ${data.program === "tamgun" ? "Tam Gun" : "Yarim Gun"}\n---\nMevcut: ${fmt(data.mevcutAylikUcret)} TL | Yeni: ${fmt(data.yeniAylikUcret)} TL\nOn Odeme: ${fmt(data.onOdeme)} TL\nI. Donem: ${fmt(data.iDonemAylik)} TL/ay\nII. Donem: ${fmt(data.iiDonemAylik)} TL/ay\nYillik: ${fmt(data.yillikToplam)} TL\n---\nReferans Kodu: ${data.referansKodu}\nRef. Kullanildi: ${data.referansKoduKullanildi || "Yok"}`
-  };
+  const odemeTablosu = `
+ÖDEME TABLOSU - ${data.childFirstName} ${data.childLastName}
+${"=".repeat(50)}
+Kayıt Günü (Ön Ödeme):     ${fmt(data.onOdeme)} TL
+${"─".repeat(50)}
+I. DÖNEM (Eylül - Ocak) — Aylık ${fmt(data.iDonemAylik)} TL
+  5 Eylül 2026:             ${fmt(data.iDonemAylik)} TL
+  5 Ekim 2026:              ${fmt(data.iDonemAylik)} TL
+  5 Kasım 2026:             ${fmt(data.iDonemAylik)} TL
+  5 Aralık 2026:            ${fmt(data.iDonemAylik)} TL
+  5 Ocak 2027:              ${fmt(data.iDonemAylik)} TL
+${"─".repeat(50)}
+II. DÖNEM (Şubat - Haziran) — Aylık ${fmt(data.iiDonemAylik)} TL
+  5 Şubat 2027:             ${fmt(data.iiDonemAylik)} TL
+  5 Mart 2027:              ${fmt(data.iiDonemAylik)} TL
+  5 Nisan 2027:             ${fmt(data.iiDonemAylik)} TL
+  5 Mayıs 2027:             ${fmt(data.iiDonemAylik)} TL
+  5 Haziran 2027:           ${fmt(data.iiDonemAylik)} TL
+${"─".repeat(50)}
+DİĞER ÖDEMELER:
+  5 Temmuz 2026 - Eğitim Materyalleri: 35.000 TL
+  5 Eylül 2026  - Orman Okulu I. Dönem Servis: ${data.referansliGeliyor ? "9.000 TL (Referans indirimi uygulanacak)" : "9.000 TL"}
+  5 Eylül 2026  - Orman Okulu Kıyafeti: ${data.kiyafetUcretsiz ? "ÜCRETSİZ (Referans)" : "5.500 TL"}
+  5 Şubat 2027  - Orman Okulu II. Dönem Servis: 10.000 TL
+${"=".repeat(50)}
+Fatura Tercihi: ${fatura}`;
 
-  await emailjs.send(EMAILJS_CONFIG.serviceId, EMAILJS_CONFIG.templateId, templateParams);
+  // OKUL MAİLİ — Tebrikler temalı
+  const okulMesaj = `
+🎉 TEBRİKLER! YENİ BİR KAYIT DAHA!
+${"=".repeat(50)}
+
+Bir Çiçek Koleji ailesi büyümeye devam ediyor! 
+
+VELİ BİLGİLERİ:
+  Ad Soyad:    ${data.parentFirstName} ${data.parentLastName}
+  E-posta:     ${data.email}
+  Telefon:     ${data.phone}
+
+ÇOCUK BİLGİLERİ:
+  Ad Soyad:    ${data.childFirstName} ${data.childLastName}
+  Doğum:       ${data.childBirthDate}
+  Sınıf:       ${data.childClass}
+  Program:     ${data.program === "tamgun" ? "Tam Gün" : "Yarım Gün"}
+
+ÖDEME PLANI:
+  Mevcut Aylık:  ${fmt(data.mevcutAylikUcret)} TL
+  Yeni Aylık:    ${fmt(data.yeniAylikUcret)} TL (+%28)
+  Ön Ödeme:      ${fmt(data.onOdeme)} TL
+  I. Dönem:      ${fmt(data.iDonemAylik)} TL/ay
+  II. Dönem:     ${fmt(data.iiDonemAylik)} TL/ay
+  Yıllık Toplam: ${fmt(data.yillikToplam)} TL
+
+Referans Kodu:   ${data.referansKodu}
+Fatura Tercihi:  ${fatura}
+Kayıt Tarihi:    ${new Date().toLocaleString("tr-TR")}
+
+${odemeTablosu}`;
+
+  // VELİ TEŞEKKÜRMAİLİ
+  const veliMesaj = `
+Sayın ${data.parentFirstName} ${data.parentLastName},
+
+2026-2027 eğitim-öğretim yılı için kayıt yenileme başvurunuzu aldık. 
+Bir Çiçek Koleji ailesinin bir parçası olmaya devam ettiğiniz için 
+içtenlikle teşekkür ederiz. 🌸
+
+${data.childFirstName}'nin büyüme yolculuğuna eşlik etmek bizim için 
+her zaman onur ve mutluluk kaynağı olmuştur.
+
+─────────────────────────────────────────
+KAYIT BİLGİLERİNİZ
+─────────────────────────────────────────
+Çocuk:      ${data.childFirstName} ${data.childLastName}
+Sınıf:      ${data.childClass}
+Program:    ${data.program === "tamgun" ? "Tam Gün" : "Yarım Gün"}
+─────────────────────────────────────────
+ÖDEME PLANINIIZ
+─────────────────────────────────────────
+${odemeTablosu}
+─────────────────────────────────────────
+
+Bir sonraki adım olarak ön ödemenizi gerçekleştirdiğinizde 
+kaydınız resmi olarak tescillenmiş olacaktır.
+
+Herhangi bir sorunuz için bize ulaşmaktan çekinmeyin.
+
+Sevgi ve saygılarımızla,
+Bir Çiçek Koleji Anaokulu
+Montessori & Orman Okulu
+Tuzla Aydınlı, İstanbul
+eposta@bircicekkoleji.com`;
+
+  // 1) Okul mailine gönder
+  await emailjs.send(EMAILJS_CONFIG.serviceId, EMAILJS_CONFIG.templateId, {
+    to_email: SCHOOL_EMAIL,
+    cocuk_adi: `${data.childFirstName} ${data.childLastName} — TEBRİKLER!`,
+    mesaj: okulMesaj
+  });
+
+  // 2) Veliye teşekkür maili gönder
+  await emailjs.send(EMAILJS_CONFIG.serviceId, EMAILJS_CONFIG.templateId, {
+    to_email: data.email,
+    cocuk_adi: `${data.childFirstName} ${data.childLastName}`,
+    mesaj: veliMesaj
+  });
 }
 
 // ═══════════════════════════════════════════════════════
@@ -1491,9 +1621,9 @@ async function loadHesapBilgileri() {
           <div style="font-size:12px; opacity:0.7; margin-bottom:6px;">REFERANS KODUNUZ</div>
           <div style="font-family:'Playfair Display',serif; font-size:28px; font-weight:700; letter-spacing:3px;">${appState.referansKod || "–"}</div>
           <div style="font-size:13px; opacity:0.8; margin-top:8px;">Getirdiğiniz kayıt sayısı: <strong>${refSayi}/3</strong></div>
-          ${refSayi >= 1 ? '<div style="font-size:12px; margin-top:4px; opacity:0.8;">✓ I. Dönem Servis ücreti hediye!</div>' : ''}
-          ${refSayi >= 2 ? '<div style="font-size:12px; opacity:0.8;">✓ II. Dönem Servis ücreti hediye!</div>' : ''}
-          ${refSayi >= 3 ? '<div style="font-size:12px; opacity:0.8;">✓ Eğitim Materyalleri ücreti hediye!</div>' : ''}
+          ${refSayi >= 1 ? '<div style="font-size:12px; margin-top:4px; opacity:0.8;">✓ I. Dönem Servis ücreti — <strong>alınmaz!</strong></div>' : ''}
+          ${refSayi >= 2 ? '<div style="font-size:12px; opacity:0.8;">✓ II. Dönem Servis ücreti — <strong>alınmaz!</strong></div>' : ''}
+          ${refSayi >= 3 ? '<div style="font-size:12px; opacity:0.8;">✓ Eğitim Materyalleri ücreti — <strong>alınmaz!</strong></div>' : ''}
         </div>
       </div>`;
   } catch(e) { el.innerHTML = "Yükleme hatası: " + e.message; }
