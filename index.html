@@ -1136,8 +1136,9 @@ input.price-input { font-size:22px; font-weight:600; font-family:'Playfair Displ
 
 <script>
 // ═══════════════════════════════════════════════════════
-// 🔧 YAPILANDIRMA — Buraya Firebase ve EmailJS bilgilerinizi girin
+// 🔧 YAPILANDIRMA
 // ═══════════════════════════════════════════════════════
+const ADMIN_EMAIL = "emrahby@gmail.com";
 const FIREBASE_CONFIG = {
   apiKey: "AIzaSyARlqAoh-HRBC9xPwj7qRgG-IuZFSH39Uc",
   authDomain: "bcka-site.firebaseapp.com",
@@ -1686,7 +1687,6 @@ async function loadHesapBilgileri() {
 // ═══════════════════════════════════════════════════════
 // ADMIN PANELİ
 // ═══════════════════════════════════════════════════════
-const ADMIN_EMAIL = "emrahby@gmail.com";
 
 function checkAdmin() {
   if (!currentUser || currentUser.email !== ADMIN_EMAIL) {
