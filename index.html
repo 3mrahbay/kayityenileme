@@ -1026,6 +1026,42 @@ input.price-input { font-size:22px; font-weight:600; font-family:'Playfair Displ
     </div>
 
     <!-- Save card -->
+    <!-- Ödeme Tercihi -->
+    <div style="background:var(--forest); border-radius:var(--radius); padding:28px; margin-bottom:16px;">
+      <div style="font-size:12px; text-transform:uppercase; letter-spacing:1px; color:rgba(255,255,255,0.6); margin-bottom:6px;">Tercih</div>
+      <div style="font-family:'Playfair Display',serif; font-size:20px; font-weight:700; color:white; margin-bottom:20px;">Ödeme Tercihiniz</div>
+
+      <div id="lbl-havale" onclick="setOdemeTip('havale')" style="display:flex; align-items:flex-start; gap:14px; background:rgba(255,255,255,0.08); border:2px solid rgba(255,255,255,0.15); border-radius:14px; padding:18px; margin-bottom:10px; cursor:pointer; transition:all 0.2s;">
+        <div style="width:22px; height:22px; border-radius:50%; border:2px solid rgba(255,255,255,0.5); flex-shrink:0; margin-top:2px; display:flex; align-items:center; justify-content:center;">
+          <div style="width:10px; height:10px; border-radius:50%; background:transparent;" id="dot-havale"></div>
+        </div>
+        <div>
+          <div style="font-size:15px; font-weight:700; color:white; margin-bottom:4px;">🏦 Havale ile Ödeme</div>
+          <div style="font-size:13px; color:rgba(255,255,255,0.7); line-height:1.5;">Bankadan IBAN ile ödeme</div>
+        </div>
+      </div>
+
+      <div id="lbl-kredikarti" onclick="setOdemeTip('kredikarti')" style="display:flex; align-items:flex-start; gap:14px; background:rgba(255,255,255,0.08); border:2px solid rgba(255,255,255,0.15); border-radius:14px; padding:18px; margin-bottom:10px; cursor:pointer; transition:all 0.2s;">
+        <div style="width:22px; height:22px; border-radius:50%; border:2px solid rgba(255,255,255,0.5); flex-shrink:0; margin-top:2px; display:flex; align-items:center; justify-content:center;">
+          <div style="width:10px; height:10px; border-radius:50%; background:transparent;" id="dot-kredikarti"></div>
+        </div>
+        <div>
+          <div style="font-size:15px; font-weight:700; color:white; margin-bottom:4px;">💳 Kredi Kartı ile Ödeme</div>
+          <div style="font-size:13px; color:rgba(255,255,255,0.7); line-height:1.6;">Sanal Pos — Banka komisyon uygular, ancak <strong style="color:rgba(255,255,255,0.9);">ücretsiz 3-5-8 taksit</strong> imkânı sunabilir. <em style="opacity:0.8;">(Öncesinde bankanız ile görüşerek teyit alınız.)</em></div>
+        </div>
+      </div>
+
+      <div id="lbl-vinov" onclick="setOdemeTip('vinov')" style="display:flex; align-items:flex-start; gap:14px; background:rgba(255,255,255,0.08); border:2px solid rgba(255,255,255,0.15); border-radius:14px; padding:18px; cursor:pointer; transition:all 0.2s;">
+        <div style="width:22px; height:22px; border-radius:50%; border:2px solid rgba(255,255,255,0.5); flex-shrink:0; margin-top:2px; display:flex; align-items:center; justify-content:center;">
+          <div style="width:10px; height:10px; border-radius:50%; background:transparent;" id="dot-vinov"></div>
+        </div>
+        <div>
+          <div style="font-size:15px; font-weight:700; color:white; margin-bottom:4px;">⭐ Vakıfbank VİNOV</div>
+          <div style="font-size:13px; color:rgba(255,255,255,0.7); line-height:1.6;">Toplam ödemenizden <strong style="color:#F0D490;">10.000 TL daha az ödeme</strong> yaparsınız. Vakıfbank Uygulamasından ücretsiz hesap açarsınız. Sözleşme esnasında okulumuzdan banka sistemine giriş yapılır; kısa sürede onay netleşir. Size özel limit tanımlanır ve aylık ödemeler otomatik olarak banka üzerinden aktarılır.</div>
+        </div>
+      </div>
+    </div>
+
     <!-- Fatura tercihi -->
     <div style="background:var(--white); border:1px solid var(--border); border-radius:var(--radius); padding:24px; margin-bottom:16px;">
       <div style="font-size:14px; font-weight:700; color:var(--forest); margin-bottom:12px;">📧 Fatura Tercihi</div>
@@ -1432,6 +1468,7 @@ function buildKayitData() {
     referansliGeliyor: appState.referansliGeliyor,
     kiyafetUcretsiz:   appState.referansliGeliyor,
     faturaIstegi: document.getElementById("faturaCheckbox")?.checked || false,
+    odemeTercihi: secilenOdemeTip || "Belirtilmedi",
     kayitTarihi: new Date().toISOString(),
     durum: "beklemede"
   };
@@ -1632,6 +1669,30 @@ async function loadHesapBilgileri() {
 // ═══════════════════════════════════════════════════════
 // YARDIMCI FONKSİYONLAR
 // ═══════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
+// ÖDEME TERCİHİ
+// ═══════════════════════════════════════════════════════
+let secilenOdemeTip = "";
+
+function setOdemeTip(tip) {
+  secilenOdemeTip = tip;
+  const tipler = ["havale", "kredikarti", "vinov"];
+  tipler.forEach(t => {
+    const lbl = document.getElementById("lbl-" + t);
+    const dot = document.getElementById("dot-" + t);
+    if (!lbl || !dot) return;
+    if (t === tip) {
+      lbl.style.background = "rgba(255,255,255,0.18)";
+      lbl.style.borderColor = "rgba(255,255,255,0.8)";
+      dot.style.background = "white";
+    } else {
+      lbl.style.background = "rgba(255,255,255,0.08)";
+      lbl.style.borderColor = "rgba(255,255,255,0.15)";
+      dot.style.background = "transparent";
+    }
+  });
+}
+
 function fmt(n) {
   return new Intl.NumberFormat("tr-TR").format(Math.round(n));
 }
