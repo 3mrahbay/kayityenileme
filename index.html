@@ -795,6 +795,13 @@ input.price-input { font-size:22px; font-weight:600; font-family:'Playfair Displ
         </div>
         <div class="action-arrow">→</div>
       </div>
+      <div class="action-card" id="adminCard" style="display:none; border-color:var(--text);" onclick="goToAdmin()">
+        <div style="flex:1">
+          <div class="action-title" style="color:var(--text);">🔒 Admin Paneli</div>
+          <div class="action-desc">Başvuruları yönet, referans takibi yap, giriş listesini görüntüle.</div>
+        </div>
+        <div class="action-arrow">→</div>
+      </div>
     </div>
 
     <div style="margin-top:32px; padding:20px; background:var(--cream-dark); border-radius:12px; font-size:13px; color:var(--text-light); line-height:1.6;">
@@ -1104,7 +1111,7 @@ input.price-input { font-size:22px; font-weight:600; font-family:'Playfair Displ
       <div class="done-what-title">Ne olacak şimdi?</div>
       <div class="done-item"><span>📧</span><span>Ödeme planınız okul yönetimine PDF olarak gönderildi</span></div>
       <div class="done-item"><span>📞</span><span>Okul yönetimi 1-2 iş günü içinde sizi arayacak</span></div>
-      <div class="done-item"><span>🔑</span><span>Ön ödemenizi yaparak kaydınızı tescilleyebilirsiniz</span></div>
+      <div class="done-item"><span>🔑</span><span>Ön ödemenizi yaparak kaydınızı tamamlayabilirsiniz</span></div>
       <div class="done-item"><span>🎁</span><span>Referans kodunuzu paylaşmayı unutmayın!</span></div>
     </div>
     <button class="btn-primary" style="margin:28px auto 0; display:inline-flex;" onclick="goToScreen('screen-portal')">Portale Dön</button>
@@ -1232,6 +1239,9 @@ function onLogin(user) {
   if(we) we.textContent = user.email;
 
   getOrCreateReferansKod(user.uid, user.email);
+  // Admin kartını göster/gizle
+  const adminCard = document.getElementById("adminCard");
+  if(adminCard) adminCard.style.display = user.email === ADMIN_EMAIL ? "flex" : "none";
   goToScreen("screen-portal");
 }
 
@@ -1596,9 +1606,15 @@ Program:    ${data.program === "tamgun" ? "Tam Gün" : "Yarım Gün"}
 ─────────────────────────────────────────
 ${odemeTablosu}
 ─────────────────────────────────────────
+REFERANS KODUNUZ: ${data.referansKodu}
+─────────────────────────────────────────
+Bu kodu arkadaşlarınızla paylaşın! Her kayıt için sürpriz
+avantajlar kazanın — 3 kayıtta eğitim materyalleri bedava.
+
+─────────────────────────────────────────
 
 Bir sonraki adım olarak ön ödemenizi gerçekleştirdiğinizde 
-kaydınız resmi olarak tescillenmiş olacaktır.
+kaydınız resmi olarak tamamlanmış olacaktır.
 
 Herhangi bir sorunuz için bize ulaşmaktan çekinmeyin.
 
@@ -1666,6 +1682,211 @@ async function loadHesapBilgileri() {
   } catch(e) { el.innerHTML = "Yükleme hatası: " + e.message; }
 }
 
+
+// ═══════════════════════════════════════════════════════
+// ADMIN PANELİ
+// ═══════════════════════════════════════════════════════
+const ADMIN_EMAIL = "emrahby@gmail.com";
+
+function checkAdmin() {
+  if (!currentUser || currentUser.email !== ADMIN_EMAIL) {
+    showToast("⛔ Admin erişimi yok");
+    goToScreen("screen-portal");
+    return false;
+  }
+  return true;
+}
+
+function goToAdmin() {
+  if (!checkAdmin()) return;
+  goToScreen("screen-admin");
+  loadAdminData();
+}
+
+function adminTab(tab) {
+  ["basv","giris","referans"].forEach(t => {
+    const el = document.getElementById("admin-" + t);
+    const btn = document.getElementById("tab-" + t);
+    if(el) el.style.display = t === tab ? "block" : "none";
+    if(btn) btn.classList.toggle("active-tab", t === tab);
+  });
+  if(tab === "giris") loadGirisList();
+  if(tab === "referans") loadRefList();
+}
+
+async function loadAdminData() {
+  try {
+    const snap = await db.collection("kayitYenileme").orderBy("kayitTarihi","desc").get();
+    const girisSnap = await db.collection("girisler").orderBy("girisZamani","desc").limit(50).get();
+    
+    let toplam = snap.size, beklemede = 0, onaylandi = 0;
+    const list = document.getElementById("admin-basv-list");
+    if(!list) return;
+    
+    if(snap.empty) {
+      list.innerHTML = '<div style="padding:40px; text-align:center; color:var(--text-light);">Henüz başvuru yok</div>';
+      return;
+    }
+
+    list.innerHTML = "";
+    snap.forEach(doc => {
+      const d = doc.data();
+      if(d.durum === "beklemede") beklemede++;
+      if(d.durum === "onaylandi") onaylandi++;
+      
+      const tarih = d.kayitTarihi ? new Date(d.kayitTarihi).toLocaleString("tr-TR") : "–";
+      const programLabel = d.program === "tamgun" ? "Tam Gün" : "Yarım Gün";
+      const odeme = d.odemeTercihi || "–";
+      const odemeLabel = odeme === "havale" ? "🏦 Havale" : odeme === "kredikarti" ? "💳 K.Kartı" : odeme === "vinov" ? "⭐ VİNOV" : "–";
+      const durumBadge = d.durum === "onaylandi" 
+        ? '<span class="badge-onaylandi">✓ Onaylandı</span>'
+        : d.durum === "reddedildi"
+        ? '<span class="badge-reddedildi">✗ Reddedildi</span>'
+        : '<span class="badge-beklemede">⏳ Beklemede</span>';
+
+      const row = document.createElement("div");
+      row.className = "admin-row";
+      row.innerHTML = `
+        <div>
+          <div style="font-weight:700; color:var(--text);">${d.parentFirstName || ""} ${d.parentLastName || ""}</div>
+          <div style="font-size:12px; color:var(--text-light);">${d.childFirstName || ""} ${d.childLastName || ""}</div>
+          <div style="font-size:11px; color:var(--text-light);">${tarih}</div>
+        </div>
+        <div>
+          <div style="font-size:13px;">${d.email || ""}</div>
+          <div style="font-size:12px; color:var(--text-light);">${d.phone || ""}</div>
+          ${d.faturaIstegi ? '<div style="font-size:11px; color:var(--forest);">📧 Fatura istiyor</div>' : ''}
+        </div>
+        <div style="font-size:13px;">${programLabel}</div>
+        <div style="font-size:12px;">${odemeLabel}</div>
+        <div>${durumBadge}</div>
+        <div>
+          ${d.durum === "beklemede" ? `
+            <button class="btn-onayla" onclick="adminOnayla('${doc.id}', '${d.email}', '${d.childFirstName} ${d.childLastName}', '${d.referansKoduKullanildi || ""}')">✓ Onayla</button>
+            <button class="btn-reddet" onclick="adminReddet('${doc.id}')">✗</button>
+          ` : `<span style="font-size:12px; color:var(--text-light);">İşlem yapıldı</span>`}
+        </div>`;
+      list.appendChild(row);
+    });
+
+    const el = id => document.getElementById(id);
+    if(el("stat-toplam")) el("stat-toplam").textContent = toplam;
+    if(el("stat-beklemede")) el("stat-beklemede").textContent = beklemede;
+    if(el("stat-onaylandi")) el("stat-onaylandi").textContent = onaylandi;
+    if(el("stat-giris")) el("stat-giris").textContent = girisSnap.size;
+
+  } catch(e) { console.error("Admin veri hatası:", e); showToast("Veri yükleme hatası"); }
+}
+
+async function loadGirisList() {
+  const list = document.getElementById("admin-giris-list");
+  if(!list) return;
+  list.innerHTML = '<div style="padding:20px; text-align:center; color:var(--text-light);">Yükleniyor...</div>';
+  try {
+    const snap = await db.collection("girisler").orderBy("girisZamani","desc").limit(100).get();
+    if(snap.empty) { list.innerHTML = '<div style="padding:40px; text-align:center; color:var(--text-light);">Giriş kaydı yok</div>'; return; }
+    list.innerHTML = "";
+    snap.forEach(doc => {
+      const d = doc.data();
+      const tarih = d.girisZamani ? new Date(d.girisZamani).toLocaleString("tr-TR") : "–";
+      const row = document.createElement("div");
+      row.style.cssText = "padding:12px 20px; display:grid; grid-template-columns:2fr 1fr 1fr; gap:8px; border-bottom:1px solid var(--cream-dark); font-size:13px;";
+      row.innerHTML = `<div>${d.email || "–"}</div><div style="color:var(--text-mid);">${d.displayName || "–"}</div><div style="color:var(--text-light); font-size:12px;">${tarih}</div>`;
+      list.appendChild(row);
+    });
+  } catch(e) { list.innerHTML = '<div style="padding:20px; color:red;">Hata: ' + e.message + '</div>'; }
+}
+
+async function loadRefList() {
+  const list = document.getElementById("admin-ref-list");
+  if(!list) return;
+  list.innerHTML = '<div style="padding:20px; text-align:center; color:var(--text-light);">Yükleniyor...</div>';
+  try {
+    const snap = await db.collection("referanslar").orderBy("kayitSayisi","desc").get();
+    if(snap.empty) { list.innerHTML = '<div style="padding:40px; text-align:center; color:var(--text-light);">Referans kaydı yok</div>'; return; }
+    list.innerHTML = "";
+    snap.forEach(doc => {
+      const d = doc.data();
+      const say = d.kayitSayisi || 0;
+      const indirim = say >= 3 ? "🎉 Materyal Bedava" : say >= 2 ? "✅ Servis I+II Bedava" : say >= 1 ? "✅ Servis I Bedava" : "—";
+      const row = document.createElement("div");
+      row.style.cssText = "padding:14px 20px; display:grid; grid-template-columns:1.5fr 1.5fr 0.5fr 0.5fr 0.5fr 1fr; gap:8px; border-bottom:1px solid var(--cream-dark); font-size:13px; align-items:center;";
+      row.innerHTML = `
+        <div style="color:var(--text); font-weight:600;">${d.email || "–"}</div>
+        <div style="font-family:'Playfair Display',serif; font-weight:700; letter-spacing:2px; color:var(--amber);">${d.kod || "–"}</div>
+        <div style="text-align:center;">${say >= 1 ? "✅" : "⬜"}</div>
+        <div style="text-align:center;">${say >= 2 ? "✅" : "⬜"}</div>
+        <div style="text-align:center;">${say >= 3 ? "✅" : "⬜"}</div>
+        <div style="font-size:12px; color:var(--forest);">${indirim}</div>`;
+      list.appendChild(row);
+    });
+  } catch(e) { list.innerHTML = '<div style="padding:20px; color:red;">Hata: ' + e.message + '</div>'; }
+}
+
+async function adminOnayla(docId, veliEmail, cocukAdi, refKodu) {
+  if(!confirm("Bu başvuruyu onaylayacaksınız. Veliye bildirim maili gönderilecek. Devam?")) return;
+  showLoading("Onaylanıyor...");
+  try {
+    await db.collection("kayitYenileme").doc(docId).update({ durum: "onaylandi", onayTarihi: new Date().toISOString() });
+    
+    // Referans kodu güncelle — önceki başvuruda referans kodu kullanıldıysa
+    if(refKodu && refKodu.startsWith("BCK-")) {
+      const q = await db.collection("referanslar").where("kod","==",refKodu).get();
+      if(!q.empty) {
+        const refDoc = q.docs[0];
+        const yeniSayi = (refDoc.data().kayitSayisi || 0) + 1;
+        await refDoc.ref.update({ kayitSayisi: yeniSayi });
+        // Referans velisine mail
+        emailjs.init(EMAILJS_CONFIG.publicKey);
+        const siraMetni = yeniSayi === 1 ? "1. referans kaydınız onaylandı! I. Dönem Orman Okulu Servis ücretiniz alınmayacaktır." 
+          : yeniSayi === 2 ? "2. referans kaydınız onaylandı! II. Dönem Orman Okulu Servis ücretiniz de alınmayacaktır."
+          : "3. referans kaydınız onaylandı! Eğitim Materyalleri ücretiniz alınmayacaktır. Tebrikler!";
+        await emailjs.send(EMAILJS_CONFIG.serviceId, EMAILJS_CONFIG.templateId, {
+          to_email: refDoc.data().email,
+          cocuk_adi: "Referans Güncelleme",
+          mesaj: `BİR ÇİÇEK KOLEJİ — REFERANS BİLDİRİMİ
+
+Sayın Velimiz,
+
+${siraMetni}
+
+Referans kodunuz: ${refKodu}
+
+Sevgi ve saygılarımızla,
+Bir Çiçek Koleji Anaokulu`
+        });
+      }
+    }
+    
+    // Veliye onay maili
+    emailjs.init(EMAILJS_CONFIG.publicKey);
+    await emailjs.send(EMAILJS_CONFIG.serviceId, EMAILJS_CONFIG.templateId, {
+      to_email: veliEmail,
+      cocuk_adi: cocukAdi,
+      mesaj: `Sayın Velimiz,
+
+${cocukAdi} için yaptığınız kayıt yenileme başvurusu onaylanmıştır.
+
+Ön ödemenizi gerçekleştirerek kaydınızı tamamlayabilirsiniz.
+
+Sevgi ve saygılarımızla,
+Bir Çiçek Koleji Anaokulu
+eposta@bircicekkoleji.com`
+    });
+    
+    hideLoading();
+    showToast("✅ Başvuru onaylandı, veliye mail gönderildi!");
+    loadAdminData();
+  } catch(e) { hideLoading(); showToast("Hata: " + e.message); }
+}
+
+async function adminReddet(docId) {
+  if(!confirm("Bu başvuruyu reddetmek istediğinizden emin misiniz?")) return;
+  await db.collection("kayitYenileme").doc(docId).update({ durum: "reddedildi" });
+  showToast("Başvuru reddedildi");
+  loadAdminData();
+}
+
 // ═══════════════════════════════════════════════════════
 // YARDIMCI FONKSİYONLAR
 // ═══════════════════════════════════════════════════════
@@ -1721,5 +1942,133 @@ function scrollToInfo() {
   document.getElementById("infoSection")?.scrollIntoView({ behavior:"smooth" });
 }
 </script>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- SCREEN: ADMIN PANELİ -->
+<!-- ═══════════════════════════════════════════ -->
+<div id="screen-admin" class="screen">
+  <nav class="navbar" style="background:var(--text); border-color:#333;">
+    <div class="logo">
+      <div class="logo-icon">🔒</div>
+      <div>
+        <div class="logo-text" style="color:white;">Admin Paneli</div>
+        <div class="logo-sub" style="color:#888;">Bir Çiçek Koleji</div>
+      </div>
+    </div>
+    <div style="display:flex; gap:12px; align-items:center;">
+      <button onclick="goToScreen('screen-portal')" style="background:rgba(255,255,255,0.1); border:1px solid #444; color:white; border-radius:8px; padding:8px 16px; font-size:13px; cursor:pointer;">← Portale Dön</button>
+      <div class="user-badge" style="background:rgba(255,255,255,0.1); border-color:#444;" onclick="signOut()">
+        <div class="user-avatar">E</div>
+        <span style="color:white;">Admin</span>
+      </div>
+    </div>
+  </nav>
+
+  <div style="max-width:900px; margin:0 auto; padding:40px 32px; flex:1;">
+    
+    <!-- İstatistik kartları -->
+    <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:32px;">
+      <div style="background:var(--white); border:1px solid var(--border); border-radius:14px; padding:20px;">
+        <div style="font-size:11px; text-transform:uppercase; letter-spacing:0.5px; color:var(--text-light); margin-bottom:8px;">Toplam Başvuru</div>
+        <div style="font-family:'Playfair Display',serif; font-size:32px; font-weight:700; color:var(--forest);" id="stat-toplam">–</div>
+      </div>
+      <div style="background:var(--white); border:1px solid var(--border); border-radius:14px; padding:20px;">
+        <div style="font-size:11px; text-transform:uppercase; letter-spacing:0.5px; color:var(--text-light); margin-bottom:8px;">Beklemede</div>
+        <div style="font-family:'Playfair Display',serif; font-size:32px; font-weight:700; color:var(--amber);" id="stat-beklemede">–</div>
+      </div>
+      <div style="background:var(--white); border:1px solid var(--border); border-radius:14px; padding:20px;">
+        <div style="font-size:11px; text-transform:uppercase; letter-spacing:0.5px; color:var(--text-light); margin-bottom:8px;">Onaylandı</div>
+        <div style="font-family:'Playfair Display',serif; font-size:32px; font-weight:700; color:var(--forest);" id="stat-onaylandi">–</div>
+      </div>
+      <div style="background:var(--white); border:1px solid var(--border); border-radius:14px; padding:20px;">
+        <div style="font-size:11px; text-transform:uppercase; letter-spacing:0.5px; color:var(--text-light); margin-bottom:8px;">Giriş Yapanlar</div>
+        <div style="font-family:'Playfair Display',serif; font-size:32px; font-weight:700; color:var(--text);" id="stat-giris">–</div>
+      </div>
+    </div>
+
+    <!-- Tab menü -->
+    <div style="display:flex; gap:8px; margin-bottom:20px; flex-wrap:wrap;">
+      <button onclick="adminTab('basv')" id="tab-basv" class="admin-tab active-tab">📋 Başvurular</button>
+      <button onclick="adminTab('giris')" id="tab-giris" class="admin-tab">🔑 Giriş Listesi</button>
+      <button onclick="adminTab('referans')" id="tab-referans" class="admin-tab">🎁 Referans Takibi</button>
+    </div>
+
+    <!-- Başvurular tablosu -->
+    <div id="admin-basv">
+      <div style="background:var(--white); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden;">
+        <div style="background:var(--forest-pale); padding:14px 20px; display:grid; grid-template-columns:1.5fr 1.5fr 0.8fr 0.8fr 0.8fr 1.2fr; gap:8px; font-size:11px; text-transform:uppercase; letter-spacing:0.5px; color:var(--forest); font-weight:700; border-bottom:1px solid #C8DEC4;">
+          <div>Veli / Çocuk</div>
+          <div>Email / Tel</div>
+          <div>Program</div>
+          <div>Ödeme Tercihi</div>
+          <div>Durum</div>
+          <div>İşlem</div>
+        </div>
+        <div id="admin-basv-list" style="max-height:500px; overflow-y:auto;">
+          <div style="padding:40px; text-align:center; color:var(--text-light);">Yükleniyor...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Giriş listesi -->
+    <div id="admin-giris" style="display:none;">
+      <div style="background:var(--white); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden;">
+        <div style="background:var(--cream-dark); padding:14px 20px; display:grid; grid-template-columns:2fr 1fr 1fr; gap:8px; font-size:11px; text-transform:uppercase; letter-spacing:0.5px; color:var(--brown); font-weight:700; border-bottom:1px solid var(--border);">
+          <div>Email</div>
+          <div>Ad</div>
+          <div>Giriş Zamanı</div>
+        </div>
+        <div id="admin-giris-list" style="max-height:500px; overflow-y:auto;">
+          <div style="padding:40px; text-align:center; color:var(--text-light);">Yükleniyor...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Referans takibi -->
+    <div id="admin-referans" style="display:none;">
+      <div style="background:var(--white); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden;">
+        <div style="background:linear-gradient(135deg, var(--amber) 0%, #D4940C 100%); padding:14px 20px; display:grid; grid-template-columns:1.5fr 1.5fr 0.5fr 0.5fr 0.5fr 1fr; gap:8px; font-size:11px; text-transform:uppercase; letter-spacing:0.5px; color:white; font-weight:700; border-bottom:1px solid rgba(255,255,255,0.2);">
+          <div>Referans Veli</div>
+          <div>Referans Kodu</div>
+          <div>1. Kayıt</div>
+          <div>2. Kayıt</div>
+          <div>3. Kayıt</div>
+          <div>İndirim Durumu</div>
+        </div>
+        <div id="admin-ref-list" style="max-height:500px; overflow-y:auto;">
+          <div style="padding:40px; text-align:center; color:var(--text-light);">Yükleniyor...</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<style>
+.admin-tab {
+  padding:10px 20px; border-radius:8px; font-size:13px; font-weight:600;
+  cursor:pointer; border:1px solid var(--border); background:var(--white); color:var(--text-mid);
+  transition:all 0.2s;
+}
+.active-tab { background:var(--forest); color:white; border-color:var(--forest); }
+.admin-row {
+  padding:14px 20px;
+  display:grid; grid-template-columns:1.5fr 1.5fr 0.8fr 0.8fr 0.8fr 1.2fr;
+  gap:8px; border-bottom:1px solid var(--cream-dark);
+  font-size:13px; align-items:center;
+}
+.admin-row:hover { background:var(--cream); }
+.btn-onayla {
+  background:var(--forest); color:white; border:none; border-radius:8px;
+  padding:7px 14px; font-size:12px; font-weight:700; cursor:pointer;
+}
+.btn-reddet {
+  background:#fee2e2; color:#dc2626; border:none; border-radius:8px;
+  padding:7px 14px; font-size:12px; font-weight:700; cursor:pointer; margin-left:6px;
+}
+.badge-beklemede { background:#FEF3C7; color:#92400E; padding:3px 10px; border-radius:50px; font-size:11px; font-weight:700; }
+.badge-onaylandi { background:var(--forest-pale); color:var(--forest); padding:3px 10px; border-radius:50px; font-size:11px; font-weight:700; }
+.badge-reddedildi { background:#fee2e2; color:#dc2626; padding:3px 10px; border-radius:50px; font-size:11px; font-weight:700; }
+</style>
 </body>
 </html>
