@@ -914,6 +914,10 @@ input.price-input { font-size:22px; font-weight:600; font-family:'Playfair Displ
         <label>Mevcut Aylık Ücretiniz (TL)</label>
         <input type="number" class="price-input" id="mevcutUcret" placeholder="28000" oninput="updatePreview()">
         <div class="price-hint">Bu yıl ödediğiniz aylık eğitim + yemek toplamı</div>
+        <div id="ucretUyari" style="display:none; margin-top:6px; padding:10px 14px; background:#FEF2F2; border:1px solid #FECACA; border-radius:8px; font-size:12px; color:#DC2626; line-height:1.5;"></div>
+        <div id="yarimGunNot" style="display:none; margin-top:8px; padding:10px 14px; background:var(--forest-pale); border:1px solid #C0DDB8; border-radius:8px; font-size:12px; color:var(--forest); line-height:1.5;">
+          📋 Yeni dönemde yarım gün programından tam gün programına geçecek olan çocuklarımız için yukarıdaki ücret kısmına kayıt oldukları tarihin <strong>tam gün ücretini</strong> yazmaları gerekmektedir.
+        </div>
         <div class="price-preview" id="pricePreview" style="display:none;">
           <span class="price-preview-label">2026-2027 Yeni Aylık Ücret (%28 artış)</span>
           <span class="price-preview-val" id="previewVal">–</span>
@@ -1308,7 +1312,7 @@ auth.onAuthStateChanged(user => {
   if (user) { currentUser = user; onLogin(user); }
 });
 
-function onLogin(user) {
+async function onLogin(user) {
   currentUser = user;
   // Giriş takibi — okul mailine bilgi
   logGiris(user);
@@ -1329,6 +1333,16 @@ function onLogin(user) {
   // Admin kartını göster/gizle
   const adminCard = document.getElementById("adminCard");
   if(adminCard) adminCard.style.display = user.email === ADMIN_EMAIL ? "flex" : "none";
+
+  // Mevcut kayıt var mı kontrol et — varsa hesap bilgileri göster
+  try {
+    const snap = await db.collection("kayitYenileme").doc(user.uid).get();
+    if (snap.exists) {
+      goToScreen("screen-hesap-bilgileri");
+      return;
+    }
+  } catch(e) { console.log("Kayıt kontrol hatası:", e); }
+
   goToScreen("screen-portal");
 }
 
@@ -1363,6 +1377,15 @@ function setProgram(tip) {
   appState.program = tip;
   document.getElementById("btnTamGun").classList.toggle("active", tip === "tamgun");
   document.getElementById("btnYarimGun").classList.toggle("active", tip === "yarimgun");
+  const input = document.getElementById("mevcutUcret");
+  const yarimNot = document.getElementById("yarimGunNot");
+  if (tip === "yarimgun") {
+    if (input && (!input.value || parseInt(input.value) >= 28000)) input.value = "26000";
+    if (yarimNot) yarimNot.style.display = "block";
+  } else {
+    if (input && (!input.value || parseInt(input.value) < 28000)) input.value = "28000";
+    if (yarimNot) yarimNot.style.display = "none";
+  }
   updatePreview();
 }
 
@@ -1373,7 +1396,30 @@ function updatePreview() {
   const val = parseInt(document.getElementById("mevcutUcret")?.value) || 0;
   const preview = document.getElementById("pricePreview");
   const previewVal = document.getElementById("previewVal");
-  if (!val || val < 1000) { if(preview) preview.style.display = "none"; return; }
+  const uyari = document.getElementById("ucretUyari");
+
+  // Validasyon
+  let valid = true;
+  if (uyari) uyari.style.display = "none";
+
+  if (val && val > 0) {
+    if (appState.program === "tamgun" && val < 28000) {
+      if (uyari) {
+        uyari.textContent = "⚠️ Tam gün programı için en düşük ücret 28.000 TL'dir. Lütfen mevcut tam gün ücretinizi giriniz.";
+        uyari.style.display = "block";
+      }
+      valid = false;
+    } else if (appState.program === "yarimgun" && (val < 26000 || val > 27000)) {
+      if (uyari) {
+        uyari.textContent = "⚠️ Yarım gün programı için ücret 26.000 TL – 27.000 TL aralığında olmalıdır.";
+        uyari.style.display = "block";
+      }
+      valid = false;
+    }
+  }
+
+  if (!val || val < 1000 || !valid) { if(preview) preview.style.display = "none"; return; }
+
   // Program fark etmeksizin: veli ne ödüyorsa onun %28 artışı
   let yeni = Math.round(val * 1.28);
   if(preview) preview.style.display = "flex";
@@ -1425,6 +1471,15 @@ function goToHesaplama() {
   const phone   = document.getElementById("parentPhone")?.value?.trim();
 
   if (!mevcut || mevcut < 1000) return showToast("⚠️ Geçerli bir aylık ücret giriniz");
+
+  // Program bazlı validasyon
+  if (appState.program === "tamgun" && mevcut < 28000) {
+    return showToast("⚠️ Tam gün programı için en düşük ücret 28.000 TL'dir");
+  }
+  if (appState.program === "yarimgun" && (mevcut < 26000 || mevcut > 27000)) {
+    return showToast("⚠️ Yarım gün programı için ücret 26.000 – 27.000 TL aralığında olmalıdır");
+  }
+
   if (!childFN || !childLN)    return showToast("⚠️ Çocuğun adını ve soyadını giriniz");
   if (!sinif)                  return showToast("⚠️ Sınıf seçiniz");
   if (!phone)                  return showToast("⚠️ Telefon numarası giriniz");
