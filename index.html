@@ -917,9 +917,12 @@ input.price-input { font-size:22px; font-weight:600; font-family:'Playfair Displ
         <div class="price-preview" id="pricePreview" style="display:none;">
           <span class="price-preview-label">2026-2027 Yeni Aylık Ücret (%28 artış)</span>
           <span class="price-preview-val" id="previewVal">–</span>
-          <div id="previewDonem" style="margin-top:8px; padding-top:8px; border-top:1px solid rgba(42,94,34,0.15); display:flex; justify-content:space-between; gap:12px; font-size:12px; color:var(--forest);">
-            <span id="previewDonem1">I. Dönem: –</span>
-            <span id="previewDonem2">II. Dönem: –</span>
+          <div id="previewDonem" style="margin-top:8px; padding-top:8px; border-top:1px solid rgba(42,94,34,0.15); font-size:12px; color:var(--forest);">
+            <div style="font-weight:600; margin-bottom:4px; color:var(--forest); opacity:0.8;">Ön kayıt sonrasında;</div>
+            <div style="display:flex; justify-content:space-between; gap:12px;">
+              <span id="previewDonem1">I. Dönem (5 Ay): –</span>
+              <span id="previewDonem2">II. Dönem (5 Ay): –</span>
+            </div>
           </div>
         </div>
       </div>
@@ -1024,28 +1027,28 @@ input.price-input { font-size:22px; font-weight:600; font-family:'Playfair Displ
             <div class="diger-name">Eğitim Materyalleri</div>
             <div class="diger-date">5 Temmuz 2026</div>
           </div>
-          <div class="diger-tutar">35.000 TL</div>
+          <div class="diger-tutar" style="font-size:13px; color:var(--text-light); font-family:'DM Sans',sans-serif; font-weight:500;">Temmuz ayında ilan edilecektir</div>
         </div>
         <div class="diger-row">
           <div class="diger-info">
             <div class="diger-name">Orman Okulu I. Dönem Servis</div>
             <div class="diger-date">5 Eylül 2026</div>
           </div>
-          <div class="diger-tutar" id="servis1Display">9.000 TL</div>
+          <div class="diger-tutar" id="servis1Display" style="font-size:13px; color:var(--text-light); font-family:'DM Sans',sans-serif; font-weight:500;">Temmuz ayında ilan edilecektir</div>
         </div>
         <div class="diger-row">
           <div class="diger-info">
             <div class="diger-name">Orman Okulu Kıyafeti</div>
             <div class="diger-date">5 Eylül 2026</div>
           </div>
-          <div id="kiyafetDisplay" class="diger-tutar">5.500 TL</div>
+          <div id="kiyafetDisplay" class="diger-tutar" style="font-size:13px; color:var(--text-light); font-family:'DM Sans',sans-serif; font-weight:500;">Temmuz ayında ilan edilecektir</div>
         </div>
         <div class="diger-row">
           <div class="diger-info">
             <div class="diger-name">Orman Okulu II. Dönem Servis</div>
             <div class="diger-date">5 Şubat 2027</div>
           </div>
-          <div class="diger-tutar" id="servis2Display">10.000 TL</div>
+          <div class="diger-tutar" id="servis2Display" style="font-size:13px; color:var(--text-light); font-family:'DM Sans',sans-serif; font-weight:500;">Temmuz ayında ilan edilecektir</div>
         </div>
       </div>
       <div style="background:var(--forest-pale); border:1px solid #C0DDB8; border-radius:12px; padding:16px 20px; font-size:13px; color:var(--forest); line-height:1.6;">
@@ -1056,8 +1059,8 @@ input.price-input { font-size:22px; font-weight:600; font-family:'Playfair Displ
     <!-- Referans kartı -->
     <div class="referans-card mt-24" id="referansKartiHesap">
       <div class="referans-badge-title">🎁 KAZANDIĞINIZ AVANTAJ</div>
-      <div class="referans-title">Referans Programına Hoş Geldiniz!</div>
-      <div class="referans-desc">Referans kodunuzu arkadaşlarınızla paylaşın. Her kayıt olan aile için sürpriz bir indirim kazanın — toplamda 3 kayıt tamamlayın, büyük ödüle ulaşın.</div>
+      <div class="referans-title">Bir Çiçek Referans Programına Hoş Geldiniz!</div>
+      <div class="referans-desc">Referans kodunuzu sevdiklerinizle paylaşın. Her kayıt olan aile için sürpriz bir indirim kazanın — toplamda 3 kayıt tamamlayın, büyük avantaj elde edin. Bu fırsat kaydını yenileyen ve referansla kayıt getiren ilk 10 Ebeveynimiz için geçerlidir. Detaylar aşağıda.</div>
       <div class="kod-box">
         <div class="kod-text" id="referansKodDisplay">BCK-????</div>
         <button class="btn-copy" onclick="copyKod()">Kopyala</button>
@@ -1068,11 +1071,11 @@ input.price-input { font-size:22px; font-weight:600; font-family:'Playfair Displ
       <div class="referans-steps mt-16">
         <div class="referans-step">
           <div class="step-num">1</div>
-          <div class="step-text"><strong>1. Kayıt:</strong> I. Dönem Orman Okulu Servis ücreti (9.000 TL) — <strong>alınmaz!</strong></div>
+          <div class="step-text"><strong>1. Kayıt:</strong> I. Dönem Orman Okulu Servis ücreti — <strong>alınmaz!</strong></div>
         </div>
         <div class="referans-step">
           <div class="step-num">2</div>
-          <div class="step-text"><strong>2. Kayıt:</strong> II. Dönem Orman Okulu Servis ücreti (10.000 TL) — <strong>alınmaz!</strong></div>
+          <div class="step-text"><strong>2. Kayıt:</strong> II. Dönem Orman Okulu Servis ücreti — <strong>alınmaz!</strong></div>
         </div>
         <div class="referans-step">
           <div class="step-num">3</div>
@@ -1103,7 +1106,7 @@ input.price-input { font-size:22px; font-weight:600; font-family:'Playfair Displ
         </div>
         <div>
           <div style="font-size:15px; font-weight:700; color:white; margin-bottom:4px;">💳 Kredi Kartı ile Ödeme</div>
-          <div style="font-size:13px; color:rgba(255,255,255,0.7); line-height:1.6;">Sanal Pos — Banka komisyon uygular, ancak <strong style="color:rgba(255,255,255,0.9);">ücretsiz 3-5-8 taksit</strong> imkânı sunabilir. <em style="opacity:0.8;">(Öncesinde bankanız ile görüşerek teyit alınız.)</em></div>
+          <div style="font-size:13px; color:rgba(255,255,255,0.7); line-height:1.6;">Peşin ödemelerde kullanılır. Peşin ödemede <strong style="color:rgba(255,255,255,0.9);">%10 indirim</strong> uygulanır. <em style="opacity:0.8;">(Banka %4-%5 oranında komisyon uygular.)</em></div>
         </div>
       </div>
 
@@ -1378,8 +1381,8 @@ function updatePreview() {
   const iiDonem = Math.round((kalan - iDonem * 5) / 5);
   const d1 = document.getElementById("previewDonem1");
   const d2 = document.getElementById("previewDonem2");
-  if(d1) d1.textContent = "I. Dönem: " + fmt(iDonem) + " TL/ay";
-  if(d2) d2.textContent = "II. Dönem: " + fmt(iiDonem) + " TL/ay";
+  if(d1) d1.textContent = "I. Dönem (5 Ay): " + fmt(iDonem) + " TL/ay";
+  if(d2) d2.textContent = "II. Dönem (5 Ay): " + fmt(iiDonem) + " TL/ay";
 }
 
 // ═══════════════════════════════════════════════════════
@@ -1625,10 +1628,10 @@ II. DÖNEM (Şubat - Haziran) — Aylık ${fmt(data.iiDonemAylik)} TL
   5 Haziran 2027:           ${fmt(data.iiDonemAylik)} TL
 ${"─".repeat(50)}
 DİĞER ÖDEMELER:
-  5 Temmuz 2026 - Eğitim Materyalleri: 35.000 TL
-  5 Eylül 2026  - Orman Okulu I. Dönem Servis: ${data.referansliGeliyor ? "9.000 TL (Referans indirimi uygulanacak)" : "9.000 TL"}
-  5 Eylül 2026  - Orman Okulu Kıyafeti: ${data.kiyafetUcretsiz ? "ÜCRETSİZ (Referans)" : "5.500 TL"}
-  5 Şubat 2027  - Orman Okulu II. Dönem Servis: 10.000 TL
+  5 Temmuz 2026 - Eğitim Materyalleri: Temmuz ayında ilan edilecektir
+  5 Eylül 2026  - Orman Okulu I. Dönem Servis: Temmuz ayında ilan edilecektir
+  5 Eylül 2026  - Orman Okulu Kıyafeti: Temmuz ayında ilan edilecektir
+  5 Şubat 2027  - Orman Okulu II. Dönem Servis: Temmuz ayında ilan edilecektir
 ${"=".repeat(50)}
 Fatura Tercihi: ${fatura}`;
 
