@@ -392,7 +392,7 @@ input.price-input { font-size:22px; font-weight:600; font-family:'Playfair Displ
   border: 1px solid #C0DDB8;
   border-radius: 12px;
   padding: 16px 20px;
-  display:flex; justify-content:space-between; align-items:center;
+  display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center;
   margin-top:8px;
 }
 .price-preview-label { font-size:13px; color:var(--forest); }
@@ -585,6 +585,10 @@ input.price-input { font-size:22px; font-weight:600; font-family:'Playfair Displ
   animation: spin 0.8s linear infinite;
 }
 @keyframes spin { to { transform:rotate(360deg); } }
+@keyframes pulseGlow {
+  0%, 100% { box-shadow:0 4px 16px rgba(229,62,62,0.35); transform:scale(1); }
+  50% { box-shadow:0 6px 24px rgba(229,62,62,0.55); transform:scale(1.03); }
+}
 .loading-text { font-size:15px; color:var(--text-mid); font-weight:500; }
 
 /* Toast */
@@ -648,7 +652,7 @@ input.price-input { font-size:22px; font-weight:600; font-family:'Playfair Displ
     <div class="hero-content">
       <div class="hero-badge">✨ 2026-2027 Avantajlı Erken Kayıt Dönemi Açıldı</div>
       <h1 class="hero-title">Çocuğunuzun<br><em>büyüme yolculuğu</em><br>devam ediyor</h1>
-      <p class="hero-subtitle">Mevcut velilerimiz için özel kayıt yenileme sistemi. Google hesabınızla güvenli giriş yapın, ödeme planınızı görüntüleyin ve avantajlı erken kayıt imkanından faydalanmak için 30 Nisan'dan önce kaydınızı lütfen tamamlayın.</p>
+      <p class="hero-subtitle">Mevcut velilerimiz için özel kayıt yenileme sistemi. Google hesabınızla güvenli giriş yapın, ödeme planınızı görüntüleyin ve avantajlı erken kayıt imkanından faydalanmak için 30 Nisan'dan önce kaydınızı tamamlayın.</p>
 
       <!-- Countdown -->
       <div class="countdown-box">
@@ -694,8 +698,8 @@ input.price-input { font-size:22px; font-weight:600; font-family:'Playfair Displ
         </div>
         <div class="feature-card">
           <div class="feature-icon">🎁</div>
-          <div class="feature-title">Sürpriz Avantaj</div>
-          <div class="feature-desc">Referans programıyla özel indirimler kazanın</div>
+          <div class="feature-title">Bir Çiçek Referans Programı</div>
+          <div class="feature-desc">Sevdiklerinizi davet edin, birlikte kazanın!</div>
         </div>
       </div>
     </div>
@@ -737,6 +741,19 @@ input.price-input { font-size:22px; font-weight:600; font-family:'Playfair Displ
     </div>
   </div>
 
+  <!-- REFERANS PROGRAMI TANITIM -->
+  <div style="background:linear-gradient(135deg, #F8F0E0 0%, #FDF8EE 50%, #EBF4E8 100%); padding:60px 24px;">
+    <div style="max-width:640px; margin:0 auto; text-align:center;">
+      <div style="display:inline-flex; align-items:center; gap:8px; background:linear-gradient(135deg, #E53E3E, #C53030); color:white; padding:10px 24px; border-radius:50px; font-size:13px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; margin-bottom:20px; box-shadow:0 4px 16px rgba(229,62,62,0.35); animation:pulseGlow 2s ease-in-out infinite;">🌸 Yeni Program</div>
+      <h2 style="font-family:'Playfair Display',serif; font-size:28px; font-weight:700; color:var(--forest); margin-bottom:8px;">Bir Çiçek Referans Programı</h2>
+      <p style="font-size:15px; color:var(--text-mid); line-height:1.7; margin-bottom:32px;">Bir Çiçek ailesi sevdiklerinizle büyüsün, beraber kazanın!<br>Kayıt yenileyip referans kodunuzu paylaştığınızda her yeni kayıt için özel bir avantaj elde etmiş olursunuz.</p>
+
+      <div style="margin-top:0; background:var(--forest-pale); border-radius:12px; padding:16px 20px; font-size:13px; color:var(--forest); line-height:1.6;">
+        <strong>Nasıl çalışır?</strong> Kayıt yenilediğinizde size özel BCK-XXXX referans kodunuz oluşur. Bu kodu okula ilk defa kayıt yaptıracak sevdiklerinizle paylaşın — her onaylanan kayıtta bir sonraki avantajı elde edersiniz! Referansla gelen ailemiz de avantaj elde eder. Detaylar ön kayıt esnasında...
+      </div>
+    </div>
+  </div>
+
   <!-- CTA BOTTOM -->
   <div class="cta-bottom">
     <h2>Yerinizi 30 Nisan'a Kadar Garantileyin</h2>
@@ -768,11 +785,39 @@ input.price-input { font-size:22px; font-weight:600; font-family:'Playfair Displ
 
   <div class="portal-body">
     <div class="welcome-card">
-      <div class="welcome-name">Hoş geldiniz! 🌸</div>
+      <div class="welcome-name">Hoş Geldiniz! 🌸</div>
       <div class="welcome-sub" id="welcomeEmail">–</div>
       <div class="deadline-pill">⏰ Avantajlı Erken Kayıt: 30 Nisan 2026'ya kadar</div>
-      <div style="margin-top:16px; background:rgba(255,255,255,0.1); border-radius:12px; padding:14px 18px; font-size:13px; color:rgba(255,255,255,0.88); line-height:1.65;">
-        📋 Milli Eğitim Bakanlığı'nın 2026-2027 dönemi için belirlediği artış oranı <strong>%43,92</strong>'dir. Bir Çiçek Koleji olarak ailelerimizin bütçelerini desteklemek adına artış oranımızı <strong>%28</strong> olarak uyguluyor; ayrıca I. dönem ödemelerinizi daha düşük, II. dönem ödemelerinizi ise Ocak maaş artışlarınızla örtüşecek şekilde yapılandırıyoruz.
+      
+      <div style="margin-top:16px; background:rgba(255,255,255,0.08); border-radius:14px; padding:18px 20px; font-size:14px; color:rgba(255,255,255,0.92); line-height:1.75;">
+        <div style="font-family:'Playfair Display',serif; font-size:17px; font-weight:700; color:white; margin-bottom:6px;">2026–2027 Eğitim Öğretim Yılı Kayıt Yenileme Duyurusu</div>
+        <div style="font-style:italic; color:rgba(255,255,255,0.7); margin-bottom:14px; font-size:13px;">Bir Çiçek'te büyüyen her çocuk, geleceğe sevgiyle hazırlanır…</div>
+        
+        <div>Sevgili Ebeveynlerimiz,</div>
+        <div style="margin-top:10px;">Bir çocuğun hayatında okul; yalnızca zaman geçirdiği bir yer değil, karakterinin şekillendiği, güven duygusunun beslendiği, merakının büyüdüğü ve hayata bakışının temellerinin atıldığı çok kıymetli bir yaşam alanıdır.</div>
+        
+        <div id="duyuruDevam" style="display:none; margin-top:10px;">
+          <div>Bizler, çocuklarımızın yalnızca bugünkü ihtiyaçlarını değil; yarının güçlü, vicdanlı, özgüvenli ve mutlu bireyleri olmaları için ihtiyaç duyacakları tüm gelişim alanlarını önemseyen bir anlayışla yol alıyoruz.</div>
+          <div style="margin-top:10px;">Her eğitim yılında olduğu gibi, bu yıl da en büyük gayemiz; çocuklarımızın kendilerini değerli hissettikleri, sevgiyle büyüdükleri, doğayla bağ kurdukları, özgürce keşfettikleri ve iyi insan olmayı içselleştirdikleri bir eğitim ortamını sürdürebilmektir.</div>
+          <div style="margin-top:10px;">Bugün geldiğimiz noktada şunu gönül rahatlığıyla söyleyebilirim ki; Bir Çiçek ailesi olarak yalnızca bir okul değil, çocukların en kıymetli gelişim yıllarına birlikte şahitlik eden güçlü bir eğitim kurumu olduk.</div>
+          <div style="margin-top:10px;">İşte tam da bu nedenle, çocuklarımızın bu güvenli ve nitelikli eğitim yolculuğuna aynı istikrarla devam edebilmesi adına, <strong style="color:white;">2026–2027 eğitim öğretim yılı kayıt yenileme sürecimizi başlatmış bulunuyoruz.</strong></div>
+          
+          <div style="margin-top:18px; background:rgba(255,255,255,0.1); border-radius:10px; padding:14px 16px;">
+            <div style="font-weight:700; color:white; margin-bottom:8px;">🎯 Erken Kayıt Avantajı — 30 Nisan 2026'ya kadar!</div>
+            <div style="margin-top:8px;">Eğitim kalitesinden ödün vermeden, ailelerimizin ekonomik planlamasını da hassasiyetle gözeten bir yaklaşım benimsemeye devam ediyoruz.</div>
+            <div style="margin-top:10px;">📋 Bildiğiniz üzere Milli Eğitim Bakanlığı'nın 2026–2027 eğitim ve öğretim dönemi için belirlediği artış oranı <strong style="color:white;">%43,92</strong>'dir. Ancak biz, mevcut ailelerimize destek olabilmek adına, bu oranı <strong style="color:white;">%28 artış</strong> ile sınırlandırma kararı aldık.</div>
+            <div style="margin-top:10px;">Bununla birlikte ödeme planlamamızı da ailelerimizin yaşam gerçekliğini dikkate alarak yapılandırdık:</div>
+            <div style="margin-top:8px; padding-left:12px; border-left:3px solid rgba(255,255,255,0.3);">
+              <div style="margin-bottom:4px;">• I. dönem ödemeleri daha düşük seviyede planlanmıştır</div>
+              <div>• II. dönem ödemeleri ise Ocak ayındaki maaş artış dönemleriyle daha uyumlu olacak şekilde düzenlenmiştir</div>
+            </div>
+            <div style="margin-top:10px; font-style:italic; color:rgba(255,255,255,0.8);">Çünkü biz inanıyoruz ki; sağlıklı bir eğitim süreci, yalnızca çocukların değil, ailelerin de kendini güvende hissettiği bir yapı ile mümkün olur.</div>
+          </div>
+        </div>
+
+        <button onclick="toggleDuyuru()" id="btnDuyuruToggle" style="margin-top:14px; background:rgba(255,255,255,0.15); border:1px solid rgba(255,255,255,0.3); color:white; border-radius:50px; padding:10px 24px; font-size:13px; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:8px; transition:all 0.3s;">
+          📖 Yazının Devamını Oku <span id="duyuruArrow" style="transition:transform 0.3s;">▼</span>
+        </button>
       </div>
     </div>
 
@@ -872,6 +917,10 @@ input.price-input { font-size:22px; font-weight:600; font-family:'Playfair Displ
         <div class="price-preview" id="pricePreview" style="display:none;">
           <span class="price-preview-label">2026-2027 Yeni Aylık Ücret (%28 artış)</span>
           <span class="price-preview-val" id="previewVal">–</span>
+          <div id="previewDonem" style="margin-top:8px; padding-top:8px; border-top:1px solid rgba(42,94,34,0.15); display:flex; justify-content:space-between; gap:12px; font-size:12px; color:var(--forest);">
+            <span id="previewDonem1">I. Dönem: –</span>
+            <span id="previewDonem2">II. Dönem: –</span>
+          </div>
         </div>
       </div>
     </div>
@@ -1027,7 +1076,7 @@ input.price-input { font-size:22px; font-weight:600; font-family:'Playfair Displ
         </div>
         <div class="referans-step">
           <div class="step-num">3</div>
-          <div class="step-text"><strong>3. Kayıt:</strong> Eğitim Materyalleri ücreti (35.000 TL) — <strong>alınmaz!</strong></div>
+          <div class="step-text"><strong>3. Kayıt:</strong> Eğitim Materyalleri ücretinin %50'si — <strong>düşülür!</strong></div>
         </div>
       </div>
     </div>
@@ -1084,7 +1133,7 @@ input.price-input { font-size:22px; font-weight:600; font-family:'Playfair Displ
       <div style="margin:12px 0; display:flex; flex-direction:column; gap:8px;">
         <div style="font-size:13px; color:var(--text-mid); display:flex; align-items:center; gap:8px;">✅ Ödeme planınız okul yönetimine iletilir</div>
         <div style="font-size:13px; color:var(--text-mid); display:flex; align-items:center; gap:8px;">✅ Referans kodunuz aktivite olur</div>
-        <div style="font-size:13px; color:var(--text-mid); display:flex; align-items:center; gap:8px;">✅ PDF özet eposta@bircicekkoleji.com adresine gönderilir</div>
+        <div style="font-size:13px; color:var(--text-mid); display:flex; align-items:center; gap:8px;">✅ PDF özet <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="a5c0d5cad6d1c4e5c7ccd7c6ccc6c0cececac9c0cfcc8bc6cac8">[email&#160;protected]</a> adresine gönderilir</div>
         <div style="font-size:13px; color:var(--text-mid); display:flex; align-items:center; gap:8px;">✅ Yeriniz ön kayıt listesinde tescillenir</div>
       </div>
     </div>
@@ -1114,6 +1163,37 @@ input.price-input { font-size:22px; font-weight:600; font-family:'Playfair Displ
       <div class="done-item"><span>🔑</span><span>Ön ödemenizi yaparak kaydınızı tamamlayabilirsiniz</span></div>
       <div class="done-item"><span>🎁</span><span>Referans kodunuzu paylaşmayı unutmayın!</span></div>
     </div>
+
+    <!-- Referans Programı Detayları -->
+    <div style="margin-top:28px; background:linear-gradient(135deg, #FDF8EE 0%, #EBF4E8 100%); border:1px solid var(--border); border-radius:var(--radius); padding:24px; text-align:left;">
+      <div style="font-family:'Playfair Display',serif; font-size:18px; font-weight:700; color:var(--forest); margin-bottom:6px; text-align:center;">🌸 Bir Çiçek Referans Programı</div>
+      <div style="font-size:13px; color:var(--text-mid); text-align:center; margin-bottom:20px;">Referans kodunuzu paylaşın, her kayıtta yeni avantajlar kazanın!</div>
+      
+      <div style="display:flex; flex-direction:column; gap:12px;">
+        <div style="display:flex; gap:14px; align-items:center; background:white; border-radius:12px; padding:14px 16px; border:1px solid var(--border);">
+          <div style="width:40px; height:40px; border-radius:50%; background:linear-gradient(135deg, #D4940C, var(--amber-light)); display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0;">1️⃣</div>
+          <div>
+            <div style="font-weight:700; color:var(--forest); font-size:14px;">I. Dönem Orman Okulu Servisi</div>
+            <div style="font-size:12px; color:var(--text-light); margin-top:2px;">İlk referans kaydı onaylandığında servis ücreti alınmaz</div>
+          </div>
+        </div>
+        <div style="display:flex; gap:14px; align-items:center; background:white; border-radius:12px; padding:14px 16px; border:1px solid var(--border);">
+          <div style="width:40px; height:40px; border-radius:50%; background:linear-gradient(135deg, #D4940C, var(--amber-light)); display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0;">2️⃣</div>
+          <div>
+            <div style="font-weight:700; color:var(--forest); font-size:14px;">II. Dönem Orman Okulu Servisi</div>
+            <div style="font-size:12px; color:var(--text-light); margin-top:2px;">İkinci referans kaydı onaylandığında bu da ücretsiz</div>
+          </div>
+        </div>
+        <div style="display:flex; gap:14px; align-items:center; background:white; border-radius:12px; padding:14px 16px; border:2px solid var(--amber); box-shadow:0 3px 12px rgba(196,136,10,0.12);">
+          <div style="width:40px; height:40px; border-radius:50%; background:linear-gradient(135deg, var(--forest), var(--forest-mid)); display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0;">🎉</div>
+          <div>
+            <div style="font-weight:700; color:var(--forest); font-size:14px;">Eğitim Materyalleri %50 İndirim!</div>
+            <div style="font-size:12px; color:var(--text-light); margin-top:2px;">Üçüncü kayıtta 35.000 TL'lik materyal ücretinin yarısı düşülür</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <button class="btn-primary" style="margin:28px auto 0; display:inline-flex;" onclick="goToScreen('screen-portal')">Portale Dön</button>
   </div>
 </div>
@@ -1134,7 +1214,7 @@ input.price-input { font-size:22px; font-weight:600; font-family:'Playfair Displ
 </div>
 
 
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 // ═══════════════════════════════════════════════════════
 // 🔧 YAPILANDIRMA
 // ═══════════════════════════════════════════════════════
@@ -1288,27 +1368,26 @@ function updatePreview() {
   const preview = document.getElementById("pricePreview");
   const previewVal = document.getElementById("previewVal");
   if (!val || val < 1000) { if(preview) preview.style.display = "none"; return; }
-  let yeni;
-  if (appState.program === "yarimgun") {
-    yeni = Math.round(val * 0.8 * 1.28);
-  } else {
-    yeni = Math.round(val * 1.28);
-  }
+  // Program fark etmeksizin: veli ne ödüyorsa onun %28 artışı
+  let yeni = Math.round(val * 1.28);
   if(preview) preview.style.display = "flex";
   if(previewVal) previewVal.textContent = fmt(yeni) + " TL";
+  // Dönemsel önizleme
+  const kalan = yeni * 9;
+  const iDonem = Math.round((kalan * 0.488) / 5 / 100) * 100;
+  const iiDonem = Math.round((kalan - iDonem * 5) / 5);
+  const d1 = document.getElementById("previewDonem1");
+  const d2 = document.getElementById("previewDonem2");
+  if(d1) d1.textContent = "I. Dönem: " + fmt(iDonem) + " TL/ay";
+  if(d2) d2.textContent = "II. Dönem: " + fmt(iiDonem) + " TL/ay";
 }
 
 // ═══════════════════════════════════════════════════════
 // ÖDEME HESAPLAMA
 // ═══════════════════════════════════════════════════════
 function hesapla(mevcutAylik, program) {
-  // Yarım gün: önce yarım gün tabanını bul (mevcut*0.8), sonra %28 artır
-  let yeniAylik;
-  if (program === "yarimgun") {
-    yeniAylik = Math.round(mevcutAylik * 0.8 * 1.28);
-  } else {
-    yeniAylik = Math.round(mevcutAylik * 1.28);
-  }
+  // Program fark etmeksizin: veli mevcut ücretine %28 artış uygulanır
+  let yeniAylik = Math.round(mevcutAylik * 1.28);
 
   const egitim = Math.round(yeniAylik * 0.60);
   const yemek  = yeniAylik - egitim;
@@ -1610,7 +1689,7 @@ ${odemeTablosu}
 REFERANS KODUNUZ: ${data.referansKodu}
 ─────────────────────────────────────────
 Bu kodu arkadaşlarınızla paylaşın! Her kayıt için sürpriz
-avantajlar kazanın — 3 kayıtta eğitim materyalleri bedava.
+avantajlar kazanın — 3 kayıtta eğitim materyalleri ücretinin %50'si düşülür.
 
 ─────────────────────────────────────────
 
@@ -1677,7 +1756,7 @@ async function loadHesapBilgileri() {
           <div style="font-size:13px; opacity:0.8; margin-top:8px;">Getirdiğiniz kayıt sayısı: <strong>${refSayi}/3</strong></div>
           ${refSayi >= 1 ? '<div style="font-size:12px; margin-top:4px; opacity:0.8;">✓ I. Dönem Servis ücreti — <strong>alınmaz!</strong></div>' : ''}
           ${refSayi >= 2 ? '<div style="font-size:12px; opacity:0.8;">✓ II. Dönem Servis ücreti — <strong>alınmaz!</strong></div>' : ''}
-          ${refSayi >= 3 ? '<div style="font-size:12px; opacity:0.8;">✓ Eğitim Materyalleri ücreti — <strong>alınmaz!</strong></div>' : ''}
+          ${refSayi >= 3 ? '<div style="font-size:12px; opacity:0.8;">✓ Eğitim Materyalleri ücretinin %50\'si — <strong>düşülür!</strong></div>' : ''}
         </div>
       </div>`;
   } catch(e) { el.innerHTML = "Yükleme hatası: " + e.message; }
@@ -1808,7 +1887,7 @@ async function loadRefList() {
     snap.forEach(doc => {
       const d = doc.data();
       const say = d.kayitSayisi || 0;
-      const indirim = say >= 3 ? "🎉 Materyal Bedava" : say >= 2 ? "✅ Servis I+II Bedava" : say >= 1 ? "✅ Servis I Bedava" : "—";
+      const indirim = say >= 3 ? "🎉 Materyal %50 İndirim" : say >= 2 ? "✅ Servis I+II Bedava" : say >= 1 ? "✅ Servis I Bedava" : "—";
       const row = document.createElement("div");
       row.style.cssText = "padding:14px 20px; display:grid; grid-template-columns:1.5fr 1.5fr 0.5fr 0.5fr 0.5fr 1fr; gap:8px; border-bottom:1px solid var(--cream-dark); font-size:13px; align-items:center;";
       row.innerHTML = `
@@ -1840,7 +1919,7 @@ async function adminOnayla(docId, veliEmail, cocukAdi, refKodu) {
         emailjs.init(EMAILJS_CONFIG.publicKey);
         const siraMetni = yeniSayi === 1 ? "1. referans kaydınız onaylandı! I. Dönem Orman Okulu Servis ücretiniz alınmayacaktır." 
           : yeniSayi === 2 ? "2. referans kaydınız onaylandı! II. Dönem Orman Okulu Servis ücretiniz de alınmayacaktır."
-          : "3. referans kaydınız onaylandı! Eğitim Materyalleri ücretiniz alınmayacaktır. Tebrikler!";
+          : "3. referans kaydınız onaylandı! Eğitim Materyalleri ücretinizin %50'si düşülecektir. Tebrikler!";
         await emailjs.send(EMAILJS_CONFIG.serviceId, EMAILJS_CONFIG.templateId, {
           to_email: refDoc.data().email,
           cocuk_adi: "Referans Güncelleme",
@@ -1936,6 +2015,19 @@ function showToast(msg) {
   t.textContent = msg;
   t.classList.add("show");
   setTimeout(() => t.classList.remove("show"), 3000);
+}
+
+function toggleDuyuru() {
+  const el = document.getElementById("duyuruDevam");
+  const btn = document.getElementById("btnDuyuruToggle");
+  const arrow = document.getElementById("duyuruArrow");
+  if (!el) return;
+  const open = el.style.display === "none";
+  el.style.display = open ? "block" : "none";
+  if (arrow) arrow.style.transform = open ? "rotate(180deg)" : "rotate(0deg)";
+  if (btn) btn.innerHTML = open 
+    ? '📖 Yazıyı Kapat <span id="duyuruArrow" style="transition:transform 0.3s; transform:rotate(180deg);">▼</span>'
+    : '📖 Yazının Devamını Oku <span id="duyuruArrow" style="transition:transform 0.3s;">▼</span>';
 }
 
 function scrollToInfo() {
@@ -2067,8 +2159,4 @@ function scrollToInfo() {
   padding:7px 14px; font-size:12px; font-weight:700; cursor:pointer; margin-left:6px;
 }
 .badge-beklemede { background:#FEF3C7; color:#92400E; padding:3px 10px; border-radius:50px; font-size:11px; font-weight:700; }
-.badge-onaylandi { background:var(--forest-pale); color:var(--forest); padding:3px 10px; border-radius:50px; font-size:11px; font-weight:700; }
-.badge-reddedildi { background:#fee2e2; color:#dc2626; padding:3px 10px; border-radius:50px; font-size:11px; font-weight:700; }
-</style>
-</body>
-</html>
+.badge-onaylandi { background:var(--forest-pale); color:var(-
