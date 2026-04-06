@@ -912,12 +912,10 @@ input.price-input { font-size:22px; font-weight:600; font-family:'Playfair Displ
       </div>
       <div class="field">
         <label>Mevcut Aylık Ücretiniz (TL)</label>
-        <input type="number" class="price-input" id="mevcutUcret" placeholder="28000" oninput="updatePreview()">
+        <input type="number" class="price-input" id="mevcutUcret" placeholder="Aylık ücretinizi giriniz" oninput="updatePreview()">
         <div class="price-hint">Bu yıl ödediğiniz aylık eğitim + yemek toplamı</div>
         <div id="ucretUyari" style="display:none; margin-top:6px; padding:10px 14px; background:#FEF2F2; border:1px solid #FECACA; border-radius:8px; font-size:12px; color:#DC2626; line-height:1.5;"></div>
-        <div id="yarimGunNot" style="display:none; margin-top:8px; padding:10px 14px; background:var(--forest-pale); border:1px solid #C0DDB8; border-radius:8px; font-size:12px; color:var(--forest); line-height:1.5;">
-          📋 Yeni dönemde yarım gün programından tam gün programına geçecek olan çocuklarımız için yukarıdaki ücret kısmına kayıt oldukları tarihin <strong>tam gün ücretini</strong> yazmaları gerekmektedir.
-        </div>
+        
         <div class="price-preview" id="pricePreview" style="display:none;">
           <span class="price-preview-label">2026-2027 Yeni Aylık Ücret (%28 artış)</span>
           <span class="price-preview-val" id="previewVal">–</span>
@@ -1038,21 +1036,21 @@ input.price-input { font-size:22px; font-weight:600; font-family:'Playfair Displ
             <div class="diger-name">Orman Okulu I. Dönem Servis</div>
             <div class="diger-date">5 Eylül 2026</div>
           </div>
-          <div class="diger-tutar" id="servis1Display" style="font-size:13px; color:var(--text-light); font-family:'DM Sans',sans-serif; font-weight:500;">Temmuz ayında ilan edilecektir</div>
+          <div class="diger-tutar" id="servis1Display" style="font-size:13px; color:var(--text-light); font-family:'DM Sans',sans-serif; font-weight:500;">Eylül ayında ilan edilecektir</div>
         </div>
         <div class="diger-row">
           <div class="diger-info">
             <div class="diger-name">Orman Okulu Kıyafeti</div>
             <div class="diger-date">5 Eylül 2026</div>
           </div>
-          <div id="kiyafetDisplay" class="diger-tutar" style="font-size:13px; color:var(--text-light); font-family:'DM Sans',sans-serif; font-weight:500;">Temmuz ayında ilan edilecektir</div>
+          <div id="kiyafetDisplay" class="diger-tutar" style="font-size:13px; color:var(--text-light); font-family:'DM Sans',sans-serif; font-weight:500;">Eylül ayında ilan edilecektir</div>
         </div>
         <div class="diger-row">
           <div class="diger-info">
             <div class="diger-name">Orman Okulu II. Dönem Servis</div>
             <div class="diger-date">5 Şubat 2027</div>
           </div>
-          <div class="diger-tutar" id="servis2Display" style="font-size:13px; color:var(--text-light); font-family:'DM Sans',sans-serif; font-weight:500;">Temmuz ayında ilan edilecektir</div>
+          <div class="diger-tutar" id="servis2Display" style="font-size:13px; color:var(--text-light); font-family:'DM Sans',sans-serif; font-weight:500;">Şubat ayında ilan edilecektir</div>
         </div>
       </div>
       <div style="background:var(--forest-pale); border:1px solid #C0DDB8; border-radius:12px; padding:16px 20px; font-size:13px; color:var(--forest); line-height:1.6;">
@@ -1377,15 +1375,6 @@ function setProgram(tip) {
   appState.program = tip;
   document.getElementById("btnTamGun").classList.toggle("active", tip === "tamgun");
   document.getElementById("btnYarimGun").classList.toggle("active", tip === "yarimgun");
-  const input = document.getElementById("mevcutUcret");
-  const yarimNot = document.getElementById("yarimGunNot");
-  if (tip === "yarimgun") {
-    if (input && (!input.value || parseInt(input.value) >= 28000)) input.value = "26000";
-    if (yarimNot) yarimNot.style.display = "block";
-  } else {
-    if (input && (!input.value || parseInt(input.value) < 28000)) input.value = "28000";
-    if (yarimNot) yarimNot.style.display = "none";
-  }
   updatePreview();
 }
 
@@ -1725,9 +1714,9 @@ function generatePDF(data) {
   doc.setFont(undefined, "normal");
   const digerList = [
     ["5 Temmuz 2026", "Egitim Materyalleri", "Temmuz ayinda ilan edilecektir"],
-    ["5 Eylul 2026", "Orman Okulu I. Donem Servis", "Temmuz ayinda ilan edilecektir"],
-    ["5 Eylul 2026", "Orman Okulu Kiyafeti", "Temmuz ayinda ilan edilecektir"],
-    ["5 Subat 2027", "Orman Okulu II. Donem Servis", "Temmuz ayinda ilan edilecektir"]
+    ["5 Eylul 2026", "Orman Okulu I. Donem Servis", "Eylul ayinda ilan edilecektir"],
+    ["5 Eylul 2026", "Orman Okulu Kiyafeti", "Eylul ayinda ilan edilecektir"],
+    ["5 Subat 2027", "Orman Okulu II. Donem Servis", "Subat ayinda ilan edilecektir"]
   ];
   digerList.forEach(([tarih, ad, tutar]) => {
     doc.text(tarih, 20, y);
@@ -1868,9 +1857,9 @@ II. DÖNEM (Şubat - Haziran) — Aylık ${fmt(data.iiDonemAylik)} TL
 ${"─".repeat(50)}
 DİĞER ÖDEMELER:
   5 Temmuz 2026 - Eğitim Materyalleri: Temmuz ayında ilan edilecektir
-  5 Eylül 2026  - Orman Okulu I. Dönem Servis: Temmuz ayında ilan edilecektir
-  5 Eylül 2026  - Orman Okulu Kıyafeti: Temmuz ayında ilan edilecektir
-  5 Şubat 2027  - Orman Okulu II. Dönem Servis: Temmuz ayında ilan edilecektir
+  5 Eylül 2026  - Orman Okulu I. Dönem Servis: Eylül ayında ilan edilecektir
+  5 Eylül 2026  - Orman Okulu Kıyafeti: Eylül ayında ilan edilecektir
+  5 Şubat 2027  - Orman Okulu II. Dönem Servis: Şubat ayında ilan edilecektir
 ${"=".repeat(50)}
 Fatura Tercihi: ${fatura}`;
 
