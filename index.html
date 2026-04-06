@@ -1116,7 +1116,7 @@ input.price-input { font-size:22px; font-weight:600; font-family:'Playfair Displ
         </div>
         <div>
           <div style="font-size:15px; font-weight:700; color:white; margin-bottom:4px;">⭐ Vakıfbank VİNOV</div>
-          <div style="font-size:13px; color:rgba(255,255,255,0.7); line-height:1.6;">Toplam ödemenizden <strong style="color:#F0D490;">10.000 TL daha az ödeme</strong> yaparsınız. Vakıfbank Uygulamasından ücretsiz hesap açarsınız. Sözleşme esnasında okulumuzdan banka sistemine giriş yapılır; kısa sürede onay netleşir. Size özel limit tanımlanır ve aylık ödemeler otomatik olarak banka üzerinden aktarılır.</div>
+          <div style="font-size:13px; color:rgba(255,255,255,0.7); line-height:1.6;">Toplam ödemenizden <strong style="color:#F0D490;">5.000 TL daha az ödeme</strong> yaparsınız. Vakıfbank Uygulamasından ücretsiz hesap açarsınız. Sözleşme esnasında okulumuzdan banka sistemine giriş yapılır; kısa sürede onay netleşir. Size özel limit tanımlanır ve aylık ödemeler otomatik olarak banka üzerinden aktarılır.</div>
         </div>
       </div>
     </div>
@@ -1136,7 +1136,7 @@ input.price-input { font-size:22px; font-weight:600; font-family:'Playfair Displ
       <div style="margin:12px 0; display:flex; flex-direction:column; gap:8px;">
         <div style="font-size:13px; color:var(--text-mid); display:flex; align-items:center; gap:8px;">✅ Ödeme planınız okul yönetimine iletilir</div>
         <div style="font-size:13px; color:var(--text-mid); display:flex; align-items:center; gap:8px;">✅ Referans kodunuz aktivite olur</div>
-        <div style="font-size:13px; color:var(--text-mid); display:flex; align-items:center; gap:8px;">✅ PDF özet <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="a5c0d5cad6d1c4e5c7ccd7c6ccc6c0cececac9c0cfcc8bc6cac8">[email&#160;protected]</a> adresine gönderilir</div>
+        <div style="font-size:13px; color:var(--text-mid); display:flex; align-items:center; gap:8px;">✅ PDF özet eposta@bircicekkoleji.com adresine gönderilir</div>
         <div style="font-size:13px; color:var(--text-mid); display:flex; align-items:center; gap:8px;">✅ Yeriniz ön kayıt listesinde tescillenir</div>
       </div>
     </div>
@@ -1197,7 +1197,10 @@ input.price-input { font-size:22px; font-weight:600; font-family:'Playfair Displ
       </div>
     </div>
 
-    <button class="btn-primary" style="margin:28px auto 0; display:inline-flex;" onclick="goToScreen('screen-portal')">Portale Dön</button>
+    <div style="display:flex; flex-direction:column; gap:12px; align-items:center; margin-top:28px;">
+      <button id="btnDownloadPDF" class="btn-primary" style="display:inline-flex; background:var(--amber); gap:8px;" onclick="downloadPDF()">📄 Ödeme Planı PDF İndir</button>
+      <button class="btn-primary" style="display:inline-flex; background:var(--forest);" onclick="goToScreen('screen-portal')">Portale Dön</button>
+    </div>
   </div>
 </div>
 
@@ -1521,8 +1524,17 @@ async function kaydet() {
       await handleReferansKayit(refGiris);
     }
 
-    // 3) PDF oluştur ve email gönder
-    await sendEmail(data);
+    // 3) PDF oluştur
+    const pdfDoc = generatePDF(data);
+    const pdfBase64 = pdfDoc.output("datauristring").split(",")[1];
+    appState.lastPDF = pdfDoc;
+
+    // 4) Email gönder (PDF base64 ile)
+    await sendEmail(data, pdfBase64);
+
+    // 5) İndir butonunu aktifle
+    const dlBtn = document.getElementById("btnDownloadPDF");
+    if(dlBtn) dlBtn.style.display = "inline-flex";
 
     hideLoading();
     goToScreen("screen-tamamlandi");
@@ -1531,6 +1543,178 @@ async function kaydet() {
     console.error(e);
     showToast("⚠️ Hata oluştu: " + e.message);
     if(btn) { btn.disabled = false; btn.textContent = "🌸 Kaydı Tamamla ve Gönder"; }
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+// PDF OLUŞTURMA
+// ═══════════════════════════════════════════════════════
+function generatePDF(data) {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF("p", "mm", "a4");
+  const h = appState.hesaplama;
+  const pw = 210;
+  let y = 20;
+
+  // Başlık
+  doc.setFillColor(42, 94, 34);
+  doc.rect(0, 0, pw, 40, "F");
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(18);
+  doc.text("Bir Cicek Koleji Anaokulu", pw / 2, 16, { align: "center" });
+  doc.setFontSize(11);
+  doc.text("2026-2027 Egitim Yili - Kayit Yenileme Odeme Plani", pw / 2, 26, { align: "center" });
+  doc.setFontSize(9);
+  doc.text("Montessori & Orman Okulu | Tuzla Aydinli, Istanbul", pw / 2, 34, { align: "center" });
+  y = 50;
+
+  // Veli / Çocuk bilgileri
+  doc.setTextColor(42, 94, 34);
+  doc.setFontSize(12);
+  doc.text("Veli ve Cocuk Bilgileri", 15, y);
+  y += 8;
+  doc.setTextColor(30, 30, 30);
+  doc.setFontSize(10);
+  const info = [
+    ["Veli:", (data.parentFirstName + " " + data.parentLastName).trim()],
+    ["E-posta:", data.email],
+    ["Telefon:", data.phone],
+    ["Cocuk:", (data.childFirstName + " " + data.childLastName).trim()],
+    ["Sinif:", data.childClass],
+    ["Program:", data.program === "tamgun" ? "Tam Gun" : "Yarim Gun"],
+    ["Kayit Tarihi:", new Date(data.kayitTarihi).toLocaleDateString("tr-TR")]
+  ];
+  info.forEach(([label, val]) => {
+    doc.setFont(undefined, "bold");
+    doc.text(label, 15, y);
+    doc.setFont(undefined, "normal");
+    doc.text(val || "-", 55, y);
+    y += 6;
+  });
+  y += 6;
+
+  // Ücret özeti
+  doc.setFillColor(235, 244, 232);
+  doc.roundedRect(15, y - 4, pw - 30, 30, 3, 3, "F");
+  doc.setTextColor(42, 94, 34);
+  doc.setFontSize(11);
+  doc.setFont(undefined, "bold");
+  doc.text("Ucret Ozeti", 20, y + 4);
+  doc.setFontSize(10);
+  doc.setFont(undefined, "normal");
+  doc.text("Mevcut Aylik: " + fmt(data.mevcutAylikUcret) + " TL", 20, y + 12);
+  doc.text("Yeni Aylik (%28 Artis): " + fmt(data.yeniAylikUcret) + " TL", 20, y + 19);
+  doc.text("On Odeme (Kayit Gunu): " + fmt(data.onOdeme) + " TL", 110, y + 12);
+  doc.text("Odeme Tercihi: " + (data.odemeTercihi || "-"), 110, y + 19);
+  y += 36;
+
+  // Ödeme takvimi
+  doc.setTextColor(42, 94, 34);
+  doc.setFontSize(12);
+  doc.setFont(undefined, "bold");
+  doc.text("Odeme Takvimi", 15, y);
+  y += 8;
+
+  // Tablo başlık
+  doc.setFillColor(42, 94, 34);
+  doc.rect(15, y - 4, pw - 30, 8, "F");
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(9);
+  doc.text("Donem", 20, y + 1);
+  doc.text("Odeme Tarihi", 80, y + 1);
+  doc.text("Tutar", 155, y + 1);
+  y += 8;
+
+  doc.setTextColor(30, 30, 30);
+  doc.setFont(undefined, "normal");
+
+  // Ön ödeme
+  doc.setFillColor(252, 248, 238);
+  doc.rect(15, y - 4, pw - 30, 7, "F");
+  doc.text("On Odeme", 20, y + 1);
+  doc.text("Kayit Gunu", 80, y + 1);
+  doc.setFont(undefined, "bold");
+  doc.text(fmt(data.onOdeme) + " TL", 155, y + 1);
+  doc.setFont(undefined, "normal");
+  y += 8;
+
+  // I. Dönem
+  const iOd = h.iDonemOdemeler || [];
+  iOd.forEach((o, i) => {
+    if (i % 2 === 0) { doc.setFillColor(245, 250, 243); doc.rect(15, y - 4, pw - 30, 7, "F"); }
+    doc.text("I. Donem", 20, y + 1);
+    doc.text(o.tarih, 80, y + 1);
+    doc.text(fmt(o.tutar) + " TL", 155, y + 1);
+    y += 7;
+  });
+
+  // II. Dönem
+  const iiOd = h.iiDonemOdemeler || [];
+  iiOd.forEach((o, i) => {
+    if (i % 2 === 0) { doc.setFillColor(252, 248, 238); doc.rect(15, y - 4, pw - 30, 7, "F"); }
+    doc.text("II. Donem", 20, y + 1);
+    doc.text(o.tarih, 80, y + 1);
+    doc.text(fmt(o.tutar) + " TL", 155, y + 1);
+    y += 7;
+  });
+
+  // Diger ödemeler
+  y += 6;
+  doc.setTextColor(42, 94, 34);
+  doc.setFontSize(12);
+  doc.setFont(undefined, "bold");
+  doc.text("Diger Odemeler", 15, y);
+  y += 8;
+  doc.setTextColor(30, 30, 30);
+  doc.setFontSize(10);
+  doc.setFont(undefined, "normal");
+  const digerList = [
+    ["5 Temmuz 2026", "Egitim Materyalleri", "Temmuz ayinda ilan edilecektir"],
+    ["5 Eylul 2026", "Orman Okulu I. Donem Servis", "Temmuz ayinda ilan edilecektir"],
+    ["5 Eylul 2026", "Orman Okulu Kiyafeti", "Temmuz ayinda ilan edilecektir"],
+    ["5 Subat 2027", "Orman Okulu II. Donem Servis", "Temmuz ayinda ilan edilecektir"]
+  ];
+  digerList.forEach(([tarih, ad, tutar]) => {
+    doc.text(tarih, 20, y);
+    doc.text(ad, 60, y);
+    doc.setFont(undefined, "italic");
+    doc.text(tutar, 130, y);
+    doc.setFont(undefined, "normal");
+    y += 6;
+  });
+
+  // Referans kodu
+  y += 6;
+  doc.setFillColor(196, 136, 10);
+  doc.roundedRect(15, y - 4, pw - 30, 18, 3, 3, "F");
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(10);
+  doc.text("Referans Kodunuz:", 20, y + 4);
+  doc.setFontSize(14);
+  doc.setFont(undefined, "bold");
+  doc.text(data.referansKodu || "BCK-????", 75, y + 4);
+  doc.setFontSize(9);
+  doc.setFont(undefined, "normal");
+  doc.text("Bu kodu sevdiklerinizle paylasin, avantajlar kazanin!", 20, y + 12);
+
+  // Footer
+  y = 282;
+  doc.setDrawColor(200, 200, 200);
+  doc.line(15, y - 4, pw - 15, y - 4);
+  doc.setTextColor(120, 120, 120);
+  doc.setFontSize(8);
+  doc.text("Bir Cicek Koleji Anaokulu | Montessori & Orman Okulu | Tuzla Aydinli, Istanbul", pw / 2, y, { align: "center" });
+  doc.text("eposta@bircicekkoleji.com | bircicekkoleji.com", pw / 2, y + 4, { align: "center" });
+
+  return doc;
+}
+
+function downloadPDF() {
+  if (appState.lastPDF) {
+    const childName = (document.getElementById("childFirstName")?.value?.trim() || "cocuk") + "_" + (document.getElementById("childLastName")?.value?.trim() || "");
+    appState.lastPDF.save("BirCicek_OdemePlani_" + childName + "_2026-2027.pdf");
+  } else {
+    showToast("PDF bulunamadı, lütfen tekrar kaydedin.");
   }
 }
 
@@ -1603,7 +1787,7 @@ async function logGiris(user) {
 // ═══════════════════════════════════════════════════════
 // EMAİL GÖNDERME (EmailJS)
 // ═══════════════════════════════════════════════════════
-async function sendEmail(data) {
+async function sendEmail(data, pdfBase64) {
   emailjs.init(EMAILJS_CONFIG.publicKey);
   const h = appState.hesaplama;
   const fatura = data.faturaIstegi ? "EVET - Fatura maile gönderilsin" : "Hayır";
