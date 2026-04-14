@@ -1502,7 +1502,13 @@ updatePeriodCountdowns();
 function goToScreen(id) {
   document.querySelectorAll(".screen").forEach(function(s){ s.classList.remove("active"); });
   var el = document.getElementById(id);
-  if(el) { el.classList.add("active"); window.scrollTo(0,0); }
+  if(el) {
+    el.classList.add("active");
+    // Navbar yüksekliğini hesapla ve ekranın hemen altına scroll yap
+    var navbar = document.querySelector(".navbar");
+    var navH = navbar ? navbar.offsetHeight : 70;
+    window.scrollTo({ top: Math.max(0, el.offsetTop - navH), behavior: "smooth" });
+  }
 }
 function scrollTo(id) { document.getElementById(id) && document.getElementById(id).scrollIntoView({behavior:"smooth"}); }
 
@@ -1543,10 +1549,6 @@ function onLogin(u) {
   goToScreen("screen-portal");
   // Başvuru durumunu kontrol et ve portal kartlarını güncelle
   checkBasvuruDurumu(u.uid);
-  // Giriş sonrası en üste scroll
-  setTimeout(function(){
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  }, 150);
 }
 
 function checkBasvuruDurumu(uid) {
