@@ -10,6 +10,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
 <style>
 :root {
   --forest: #2A5E22;
@@ -2436,7 +2437,7 @@ function scrollToInfo() {
           <option value="tamamlanan">Tamamlanan</option>
         </select>
         <div style="flex:1;"></div>
-        <button onclick="exportOdemeCSV()" style="padding:8px 16px; border:1px solid var(--forest); border-radius:8px; font-size:13px; font-weight:600; cursor:pointer; background:var(--forest-pale); color:var(--forest); font-family:'Outfit',sans-serif;">📥 CSV İndir</button>
+        <button onclick="exportOdemeExcel()" style="padding:8px 16px; border:1px solid var(--forest); border-radius:8px; font-size:13px; font-weight:600; cursor:pointer; background:var(--forest-pale); color:var(--forest); font-family:'Outfit',sans-serif;">📥 Excel İndir</button>
       </div>
 
       <!-- Öğrenci Listesi -->
@@ -3305,21 +3306,155 @@ async function silSerbestOdeme(serbestIdx) {
   } catch(e) { hideLoading(); showToast("Hata: " + e.message); }
 }
 
-function exportOdemeCSV() {
+function exportOdemeExcel() {
   if(!odemeCache.length) { showToast("Veri yok"); return; }
   
-  let csv = "Ogrenci,Veli,Email,Program,Kaynak,Toplam,Odenen,Kalan,Geciken\n";
-  odemeCache.forEach(s => {
-    const prog = s.program === "tamgun" || s.program === "tam" ? "Tam Gun" : "Yarim Gun";
-    csv += `"${s.ogrenciAdi}","${s.veliAdi}","${s.email}","${prog}","${s.kaynak}",${s.toplamTutar},${s.toplamOdenen},${s.kalanBakiye},${s.geciken}\n`;
-  });
+  showLoading("Excel oluşturuluyor...");
   
-  const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
-  const link = document.createElement("a");
-  link.href = URL.createObjectURL(blob);
-  link.download = "odeme_rapor_" + new Date().toISOString().slice(0,10) + ".csv";
-  link.click();
-  showToast("📥 CSV indirildi");
+  try {
+    const wb = XLSX.utils.book_new();
+    
+    // ═══ ÖZET SEKMESİ ═══
+    const ozetData = [
+      ["BİR ÇİÇEK KOLEJİ — 2026-2027 ÖDEME TAKİP"],
+      [""],
+      ["No", "Öğrenci Adı", "Veli Adı", "Email", "Program", "Kaynak", "Aylık Ücret", "Yıllık Toplam", "Toplam Ödenen", "Kalan Bakiye", "Geciken", "Durum"]
+    ];
+    
+    odemeCache.forEach((s, i) => {
+      const prog = s.program === "tamgun" || s.program === "tam" ? "Tam Gün" : "Yarım Gün";
+      const kaynak = s.kaynak === "kayitYenileme" ? "Mevcut Veli" : "Yeni Kayıt";
+      const d = s.data || {};
+      const aylik = d.adminAylikUcret || d.yeniAylikUcret || d.iDonemAylik || 0;
+      const durum = s.geciken > 0 ? "⚠️ " + s.geciken + " geciken" : s.kalanBakiye <= 0 ? "✅ Tamamlandı" : "⏳ Devam";
+      ozetData.push([i+1, s.ogrenciAdi, s.veliAdi, s.email, prog, kaynak, aylik, s.toplamTutar, s.toplamOdenen, s.kalanBakiye, s.geciken, durum]);
+    });
+    
+    // Boş satır + toplam
+    ozetData.push([]);
+    const topAlacak = odemeCache.reduce((t,s) => t + s.toplamTutar, 0);
+    const topTahsilat = odemeCache.reduce((t,s) => t + s.toplamOdenen, 0);
+    ozetData.push(["", "", "", "", "", "TOPLAM:", "", topAlacak, topTahsilat, topAlacak - topTahsilat, "", ""]);
+    
+    // Banka bilgileri
+    ozetData.push([]);
+    ozetData.push(["BANKA BİLGİLERİ"]);
+    ozetData.push(["Birincil Hesap:", "EMRAH BAY", "TR26 0020 5000 0969 5703 5000 02", "Kuveyt Türk"]);
+    ozetData.push(["İkincil Hesap:", "NUR ERALP BAY", "TR40 0020 5000 0980 5655 2000 01", "Kuveyt Türk"]);
+    
+    const wsOzet = XLSX.utils.aoa_to_sheet(ozetData);
+    wsOzet["!cols"] = [{wch:5},{wch:22},{wch:20},{wch:25},{wch:12},{wch:14},{wch:14},{wch:16},{wch:16},{wch:14},{wch:10},{wch:18}];
+    XLSX.utils.book_append_sheet(wb, wsOzet, "ÖZET");
+    
+    // ═══ HER ÖĞRENCİ İÇİN AYRI SEKME ═══
+    odemeCache.forEach(s => {
+      const d = s.data || {};
+      const aylik = d.adminAylikUcret || d.yeniAylikUcret || 0;
+      const onOdeme = d.onOdeme || aylik;
+      const iAylik = d.iDonemAylik || aylik;
+      const iiAylik = d.iiDonemAylik || iAylik;
+      const prog = s.program === "tamgun" || s.program === "tam" ? "Tam Gün" : "Yarım Gün";
+      
+      const rows = [];
+      
+      // Öğrenci bilgileri
+      rows.push(["ÖĞRENCİ ÖDEME KARTI"]);
+      rows.push([]);
+      rows.push(["Öğrenci Adı:", s.ogrenciAdi]);
+      rows.push(["Veli Adı:", s.veliAdi]);
+      rows.push(["Email:", s.email]);
+      rows.push(["Telefon:", d.phone || ""]);
+      rows.push(["Program:", prog]);
+      rows.push([]);
+      
+      // Ücret bilgileri
+      rows.push(["ÜCRET BİLGİLERİ"]);
+      rows.push(["Aylık Ücret (Eğitim+Yemek):", aylik]);
+      rows.push(["Ön Ödeme (Eylül):", onOdeme]);
+      rows.push(["I. Dönem Aylık (Ekim-Ocak):", iAylik]);
+      rows.push(["II. Dönem Aylık (Şubat-Haziran):", iiAylik]);
+      rows.push(["Yıllık Toplam:", s.toplamTutar]);
+      rows.push(["Toplam Ödenen:", s.toplamOdenen]);
+      rows.push(["Kalan Bakiye:", s.kalanBakiye]);
+      rows.push([]);
+      
+      // Taksit planı
+      rows.push(["TAKSİT PLANI & ÖDEME GEÇMİŞİ"]);
+      rows.push(["No", "Ay", "Son Ödeme", "Taksit Tutarı", "Ödenen Tutar", "Ödeme Tarihi", "Ödeme Yöntemi", "Açıklama"]);
+      
+      const taksitler = getTaksitPlani(s);
+      taksitler.forEach((t, i) => {
+        const ayIsimleri = {9:"Eylül",10:"Ekim",11:"Kasım",12:"Aralık",1:"Ocak",2:"Şubat",3:"Mart",4:"Nisan",5:"Mayıs",6:"Haziran"};
+        const tarihStr = "5 " + (ayIsimleri[t.no]||"") + " " + t.yil;
+        const durum = t.odendi ? "✅ Ödendi" : t.kismiOdendi ? "🔶 Kısmi" : "⏳ Bekliyor";
+        
+        // Ana satır
+        let odenenStr = t.odenenToplam || "";
+        let odemeTarihStr = "";
+        let odemeYontemStr = "";
+        let odemeNotStr = "";
+        
+        if(t.taksitOdemeleri.length > 0) {
+          const son = t.taksitOdemeleri[t.taksitOdemeleri.length - 1];
+          odemeTarihStr = son.tarih ? new Date(son.tarih).toLocaleDateString("tr-TR") : "";
+          odemeYontemStr = son.yontem === "havale" ? "Havale" : son.yontem === "kredikarti" ? "Kredi Kartı" : "Nakit";
+          odemeNotStr = son.aciklama || "";
+        }
+        
+        rows.push([i+1, t.ay, tarihStr, t.tutar, odenenStr, odemeTarihStr, odemeYontemStr, odemeNotStr + (t.odendi ? "" : t.kismiOdendi ? " (kısmi)" : "")]);
+        
+        // Birden fazla ödeme varsa alt satırlar
+        if(t.taksitOdemeleri.length > 1) {
+          t.taksitOdemeleri.forEach(o => {
+            const yIcon = o.yontem === "havale" ? "Havale" : o.yontem === "kredikarti" ? "K.Kartı" : "Nakit";
+            rows.push(["", "  ↳ Kısmi ödeme", "", "", o.tutar, new Date(o.tarih).toLocaleDateString("tr-TR"), yIcon, o.aciklama || ""]);
+          });
+        }
+      });
+      
+      // Toplam satırı
+      rows.push(["", "TOPLAM", "", s.toplamTutar, s.toplamOdenen, "", "KALAN:", s.kalanBakiye]);
+      rows.push([]);
+      
+      // Serbest ödemeler
+      const serbest = s.odemeler.filter(o => o.tip === "serbest");
+      if(serbest.length > 0) {
+        rows.push(["DİĞER ÖDEMELER"]);
+        rows.push(["No", "Ödeme Adı", "Tutar", "Tarih", "Yöntem", "Açıklama"]);
+        serbest.forEach((o, i) => {
+          const yontem = o.yontem === "havale" ? "Havale" : o.yontem === "kredikarti" ? "K.Kartı" : "Nakit";
+          rows.push([i+1, o.odemeAdi || "Serbest", o.tutar, new Date(o.tarih).toLocaleDateString("tr-TR"), yontem, o.aciklama || ""]);
+        });
+        const topSerbest = serbest.reduce((t,o) => t + (o.tutar||0), 0);
+        rows.push(["", "TOPLAM", topSerbest]);
+      }
+      
+      rows.push([]);
+      rows.push(["BANKA BİLGİLERİ"]);
+      rows.push(["Birincil:", "EMRAH BAY", "TR26 0020 5000 0969 5703 5000 02"]);
+      rows.push(["İkincil:", "NUR ERALP BAY", "TR40 0020 5000 0980 5655 2000 01"]);
+      rows.push(["Havale Açıklaması:", s.ogrenciAdi.replace(/\s/g,"").toUpperCase() + "-2627"]);
+      
+      const ws = XLSX.utils.aoa_to_sheet(rows);
+      ws["!cols"] = [{wch:5},{wch:24},{wch:18},{wch:16},{wch:16},{wch:16},{wch:16},{wch:22}];
+      
+      // Sekme adı (max 31 karakter, özel karakter yok)
+      let tabName = s.ogrenciAdi.substring(0,28).replace(/[\/\\*?\[\]]/g,"");
+      XLSX.utils.book_append_sheet(wb, ws, tabName);
+    });
+    
+    // Excel dosyasını indir
+    const tarih = new Date().toISOString().slice(0,10);
+    XLSX.writeFile(wb, "BirCicek_OdemeTakip_" + tarih + ".xlsx");
+    
+    hideLoading();
+    showToast("📥 Excel indirildi — " + odemeCache.length + " öğrenci");
+    
+  } catch(e) {
+    hideLoading();
+    showToast("Hata: " + e.message);
+    console.error("Excel export hatası:", e);
+  }
 }
 </script>
 
