@@ -1611,8 +1611,12 @@ async function kaydet() {
     const pdfBase64 = pdfDoc.output("datauristring").split(",")[1];
     appState.lastPDF = pdfDoc;
 
-    // 4) Email gönder (PDF base64 ile)
-    await sendEmail(data, pdfBase64);
+    // 4) Email gönder (PDF base64 ile) — hata olursa kayıt yine tamamlanır
+    try {
+      await sendEmail(data, pdfBase64);
+    } catch(mailErr) {
+      console.warn("Email gönderilemedi:", mailErr);
+    }
 
     // 5) İndir butonunu aktifle
     const dlBtn = document.getElementById("btnDownloadPDF");
@@ -1622,8 +1626,9 @@ async function kaydet() {
     goToScreen("screen-tamamlandi");
   } catch(e) {
     hideLoading();
-    console.error(e);
-    showToast("⚠️ Hata oluştu: " + e.message);
+    console.error("Kayıt hatası:", e);
+    const errMsg = e?.message || e?.text || (typeof e === "string" ? e : JSON.stringify(e));
+    showToast("⚠️ Hata oluştu: " + errMsg);
     if(btn) { btn.disabled = false; btn.textContent = "🌸 Kaydı Tamamla ve Gönder"; }
   }
 }
