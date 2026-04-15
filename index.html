@@ -2545,9 +2545,10 @@ function scrollToInfo() {
           <div style="font-weight:700; font-size:15px; color:var(--text); margin-bottom:12px;">📅 Taksit Planı & Ödeme Geçmişi</div>
           <div id="om-taksit-list" style="border:1px solid var(--border); border-radius:12px; overflow:hidden; margin-bottom:20px;"></div>
 
-          <!-- Yeni Ödeme Girişi -->
-          <div style="background:var(--cream); border-radius:12px; padding:20px;">
-            <div style="font-weight:700; font-size:15px; color:var(--text); margin-bottom:16px;">➕ Yeni Ödeme Girişi</div>
+          <!-- Yeni Ödeme Girişi (Serbest) -->
+          <details style="background:var(--cream); border-radius:12px; padding:4px 20px;">
+            <summary style="font-weight:700; font-size:14px; color:var(--text-mid); cursor:pointer; padding:14px 0;">➕ Serbest Ödeme Girişi <span style="font-size:11px; font-weight:400; color:var(--text-light);">(taksit dışı ödemeler için)</span></summary>
+            <div style="padding-bottom:20px;">
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
               <div>
                 <label class="odeme-form-label">Tutar (TL)</label>
@@ -2571,7 +2572,8 @@ function scrollToInfo() {
               </div>
             </div>
             <button onclick="kaydetOdeme()" style="margin-top:16px; width:100%; padding:14px; background:var(--forest); color:white; border:none; border-radius:10px; font-size:15px; font-weight:700; cursor:pointer; font-family:'Outfit',sans-serif;">✓ Ödemeyi Kaydet</button>
-          </div>
+            </div>
+          </details>
         </div>
       </div>
 
@@ -2753,10 +2755,10 @@ function getTaksitPlani(s) {
   // I. Dönem ve II. Dönem aylıkları farklı olabilir
   const iAylik = d.iDonemAylik || d.iAylik || (s.toplamTutar / 10);
   const iiAylik = d.iiDonemAylik || d.iiAylik || iAylik;
-  const onOdeme = d.onOdeme || iAylik; // Ön ödeme = 1 aylık
+  const onOdeme = d.onOdeme || iAylik;
 
   const aylar = [
-    {ay:"Eylül", no:9, donem:"I", tutar: onOdeme, label:"Ön Ödeme + Eylül"},
+    {ay:"Eylül (Ön Ödeme)", no:9, donem:"I", tutar: onOdeme},
     {ay:"Ekim", no:10, donem:"I", tutar: iAylik},
     {ay:"Kasım", no:11, donem:"I", tutar: iAylik}, 
     {ay:"Aralık", no:12, donem:"I", tutar: iAylik},
@@ -2768,20 +2770,19 @@ function getTaksitPlani(s) {
     {ay:"Haziran", no:6, donem:"II", tutar: iiAylik}
   ];
   
-  return aylar.map((a) => {
+  return aylar.map((a, idx) => {
     const yil = a.no >= 9 ? 2026 : 2027;
     const tarih = `${yil}-${String(a.no).padStart(2,"0")}-05`;
-    const odendi = s.odemeler.some(o => {
-      const oTarih = new Date(o.tarih);
-      return oTarih.getMonth() + 1 === a.no && oTarih.getFullYear() === yil;
-    });
-    const odemeBilgi = s.odemeler.find(o => {
-      const oTarih = new Date(o.tarih);
-      return oTarih.getMonth() + 1 === a.no && oTarih.getFullYear() === yil;
-    });
+    // Bir taksite birden fazla kısmi ödeme olabilir
+    const taksitOdemeleri = s.odemeler.filter(o => o.taksitIndex === idx || (o.taksitAy === a.no && o.taksitYil === yil));
+    const odenenToplam = taksitOdemeleri.reduce((t,o) => t + (o.tutar||0), 0);
+    const tamOdendi = odenenToplam >= a.tutar;
+    const kismiOdendi = odenenToplam > 0 && odenenToplam < a.tutar;
     return {
-      ay: a.label || a.ay, tarih: tarih, tutar: a.tutar,
-      odendi: odendi, odemeBilgi: odemeBilgi || null,
+      ay: a.ay, tarih: tarih, tutar: a.tutar, no: a.no, yil: yil, idx: idx,
+      odendi: tamOdendi, kismiOdendi: kismiOdendi,
+      odenenToplam: odenenToplam, kalanTutar: Math.max(0, a.tutar - odenenToplam),
+      taksitOdemeleri: taksitOdemeleri,
       donem: a.donem
     };
   });
@@ -2889,36 +2890,207 @@ function renderTaksitPlani(s) {
   const cont = document.getElementById("om-taksit-list");
   const now = new Date();
   
-  let html = `<div style="display:grid; grid-template-columns:1.5fr 1fr 1fr 1fr 1.5fr; padding:12px 16px; background:var(--forest-pale); font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; color:var(--forest);">
-    <div>Taksit</div><div>Son Ödeme</div><div>Tutar</div><div>Durum</div><div>Detay</div>
-  </div>`;
+  let html = `<div class="tp-header"><div>Taksit</div><div>Son Ödeme</div><div>Tutar</div><div>Ödenen</div><div>Durum</div><div>İşlem</div></div>`;
   
   let currentDonem = "";
-  taksitler.forEach((t, i) => {
+  taksitler.forEach((t) => {
     if(t.donem !== currentDonem) {
       currentDonem = t.donem;
       html += `<div style="padding:8px 16px; background:var(--cream); font-size:11px; font-weight:700; color:var(--text-mid);">${t.donem}. Dönem</div>`;
     }
     
-    const gecikti = new Date(t.tarih) < now && !t.odendi;
-    const bg = gecikti ? "#FEF2F2" : t.odendi ? "#F0FFF4" : "";
-    const durumIcon = t.odendi ? "✅" : gecikti ? "⚠️" : "⏳";
-    const durumText = t.odendi ? "Ödendi" : gecikti ? "Gecikmiş" : "Bekliyor";
-    const durumColor = t.odendi ? "var(--forest)" : gecikti ? "#dc2626" : "var(--text-light)";
-    const detay = t.odemeBilgi 
-      ? `${t.odemeBilgi.yontem === "havale" ? "🏦" : t.odemeBilgi.yontem === "kredikarti" ? "💳" : "💵"} ${new Date(t.odemeBilgi.tarih).toLocaleDateString("tr-TR")} · ${fmt(t.odemeBilgi.tutar)} ₺` 
-      : "—";
+    const gecikti = new Date(t.tarih) < now && !t.odendi && !t.kismiOdendi;
+    const geciktiKismi = new Date(t.tarih) < now && t.kismiOdendi;
+    const bg = t.odendi ? "#F0FFF4" : (gecikti || geciktiKismi) ? "#FEF2F2" : t.kismiOdendi ? "#FFFBEB" : "";
     
-    html += `<div style="display:grid; grid-template-columns:1.5fr 1fr 1fr 1fr 1.5fr; padding:12px 16px; border-bottom:1px solid var(--cream-dark); font-size:13px; align-items:center; background:${bg};">
+    let durumIcon, durumText, durumColor;
+    if(t.odendi) { durumIcon="✅"; durumText="Tam Ödendi"; durumColor="var(--forest)"; }
+    else if(t.kismiOdendi && geciktiKismi) { durumIcon="⚠️"; durumText="Kısmi (gecikmiş)"; durumColor="#dc2626"; }
+    else if(t.kismiOdendi) { durumIcon="🔶"; durumText="Kısmi Ödeme"; durumColor="var(--amber)"; }
+    else if(gecikti) { durumIcon="⚠️"; durumText="Gecikmiş"; durumColor="#dc2626"; }
+    else { durumIcon="⏳"; durumText="Bekliyor"; durumColor="var(--text-light)"; }
+    
+    const ayIsimleri = {9:"Eylül",10:"Ekim",11:"Kasım",12:"Aralık",1:"Ocak",2:"Şubat",3:"Mart",4:"Nisan",5:"Mayıs",6:"Haziran"};
+    const tarihStr = "5 " + (ayIsimleri[t.no]||"") + " " + t.yil;
+    
+    // Ödenen sütunu
+    const odenenStr = t.odenenToplam > 0 
+      ? `<span style="color:var(--forest); font-weight:700;">${fmt(t.odenenToplam)} ₺</span>` 
+      : `<span style="color:var(--text-light);">—</span>`;
+    
+    // Progress bar
+    const yuzde = t.tutar > 0 ? Math.min(100, Math.round((t.odenenToplam / t.tutar) * 100)) : 0;
+    const progressBar = t.odenenToplam > 0 ? `<div style="background:#e5e7eb; border-radius:50px; height:4px; margin-top:3px; overflow:hidden;"><div style="background:${t.odendi ? 'var(--forest)' : 'var(--amber)'}; height:100%; width:${yuzde}%; border-radius:50px;"></div></div>` : "";
+    
+    // İşlem butonu
+    let islemHtml = "";
+    if(t.odendi) {
+      islemHtml = `<button onclick="taksitIptal(${t.idx})" class="tp-btn-iptal">↩ İptal</button>`;
+    } else {
+      const kalanTutar = t.kalanTutar;
+      islemHtml = `<button onclick="taksitOdePopup(${t.idx}, ${kalanTutar}, ${t.tutar}, ${t.no}, ${t.yil})" class="tp-btn-ode">💰 Ödeme Gir</button>`;
+    }
+    
+    // Kısmi ödemelerin detayları
+    let detayHtml = "";
+    if(t.taksitOdemeleri.length > 0) {
+      detayHtml = `<div style="grid-column:1/-1; padding:4px 16px 10px 16px; font-size:11px; color:var(--text-light); background:${bg};">`;
+      t.taksitOdemeleri.forEach(o => {
+        const yontemIcon = o.yontem === "havale" ? "🏦" : o.yontem === "kredikarti" ? "💳" : "💵";
+        detayHtml += `<span style="margin-right:12px;">${yontemIcon} ${fmt(o.tutar)} ₺ — ${new Date(o.tarih).toLocaleDateString("tr-TR")}${o.aciklama ? " · " + o.aciklama : ""}</span>`;
+      });
+      detayHtml += `</div>`;
+    }
+    
+    html += `<div class="tp-row" style="background:${bg};">
       <div style="font-weight:600;">${t.ay}</div>
-      <div style="color:var(--text-light); font-size:12px;">5 ${t.ay} ${new Date(t.tarih).getFullYear()}</div>
+      <div style="color:var(--text-light); font-size:12px;">${tarihStr}</div>
       <div style="font-weight:600;">${fmt(t.tutar)} ₺</div>
+      <div>${odenenStr}${progressBar}</div>
       <div style="color:${durumColor}; font-weight:700; font-size:12px;">${durumIcon} ${durumText}</div>
-      <div style="font-size:12px; color:var(--text-mid);">${detay}</div>
-    </div>`;
+      <div>${islemHtml}</div>
+    </div>${detayHtml}`;
   });
   
+  // Ödeme giriş popup (gizli)
+  html += `<div id="taksit-ode-popup" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.4); z-index:10000; display:none; align-items:center; justify-content:center; padding:20px;">
+    <div style="background:white; border-radius:16px; padding:24px; max-width:380px; width:100%;">
+      <div style="font-family:'Playfair Display',serif; font-size:18px; font-weight:700; margin-bottom:4px;" id="tp-popup-title"></div>
+      <div style="font-size:12px; color:var(--text-light); margin-bottom:16px;" id="tp-popup-info"></div>
+      <div style="margin-bottom:12px;">
+        <label class="odeme-form-label">Ödeme Tutarı (TL)</label>
+        <input type="number" id="tp-popup-tutar" class="odeme-form-input" style="font-size:18px; font-weight:700;">
+      </div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px;">
+        <div>
+          <label class="odeme-form-label">Tarih</label>
+          <input type="date" id="tp-popup-tarih" class="odeme-form-input">
+        </div>
+        <div>
+          <label class="odeme-form-label">Yöntem</label>
+          <select id="tp-popup-yontem" class="odeme-form-input">
+            <option value="havale">🏦 Havale</option>
+            <option value="kredikarti">💳 Kredi Kartı</option>
+            <option value="nakit">💵 Nakit</option>
+          </select>
+        </div>
+      </div>
+      <div style="margin-bottom:16px;">
+        <label class="odeme-form-label">Not (opsiyonel)</label>
+        <input type="text" id="tp-popup-not" class="odeme-form-input" placeholder="Açıklama">
+      </div>
+      <div style="display:flex; gap:10px;">
+        <button onclick="taksitOdeKaydet()" style="flex:1; padding:12px; background:var(--forest); color:white; border:none; border-radius:10px; font-size:14px; font-weight:700; cursor:pointer; font-family:'Outfit',sans-serif;">✓ Kaydet</button>
+        <button onclick="document.getElementById('taksit-ode-popup').style.display='none';" style="padding:12px 20px; background:var(--cream); color:var(--text-mid); border:none; border-radius:10px; font-size:14px; font-weight:600; cursor:pointer; font-family:'Outfit',sans-serif;">İptal</button>
+      </div>
+    </div>
+  </div>`;
+  
   cont.innerHTML = html;
+}
+
+let popupTaksitData = {};
+
+function taksitOdePopup(idx, kalan, tam, ay, yil) {
+  const ayIsimleri = {9:"Eylül",10:"Ekim",11:"Kasım",12:"Aralık",1:"Ocak",2:"Şubat",3:"Mart",4:"Nisan",5:"Mayıs",6:"Haziran"};
+  popupTaksitData = { idx, kalan, tam, ay, yil };
+  
+  document.getElementById("tp-popup-title").textContent = ayIsimleri[ay] + " " + yil + " Taksiti";
+  document.getElementById("tp-popup-info").textContent = "Taksit tutarı: " + fmt(tam) + " ₺ · Kalan: " + fmt(kalan) + " ₺";
+  document.getElementById("tp-popup-tutar").value = kalan;
+  document.getElementById("tp-popup-tutar").placeholder = fmt(kalan);
+  document.getElementById("tp-popup-tarih").value = new Date().toISOString().split("T")[0];
+  document.getElementById("tp-popup-not").value = "";
+  document.getElementById("taksit-ode-popup").style.display = "flex";
+}
+
+async function taksitOdeKaydet() {
+  const d = popupTaksitData;
+  if(!d.ay || !aktifOgrenciId) return;
+  
+  const tutar = parseFloat(document.getElementById("tp-popup-tutar").value) || 0;
+  if(tutar <= 0) { showToast("⚠️ Tutar giriniz"); return; }
+  
+  const tarih = document.getElementById("tp-popup-tarih").value;
+  const yontem = document.getElementById("tp-popup-yontem").value;
+  const not = document.getElementById("tp-popup-not").value;
+  const ayIsimleri = {9:"Eylül",10:"Ekim",11:"Kasım",12:"Aralık",1:"Ocak",2:"Şubat",3:"Mart",4:"Nisan",5:"Mayıs",6:"Haziran"};
+  
+  const label = tutar < d.kalan ? "Kısmi ödeme" : "Tam ödeme";
+  if(!confirm(`${ayIsimleri[d.ay]} ${d.yil} — ${label}: ${fmt(tutar)} TL\nOnaylıyor musunuz?`)) return;
+  
+  document.getElementById("taksit-ode-popup").style.display = "none";
+  showLoading("Kaydediliyor...");
+  
+  try {
+    const yeniOdeme = {
+      tutar: tutar,
+      tarih: tarih,
+      yontem: yontem,
+      aciklama: not || (ayIsimleri[d.ay] + " " + d.yil + (tutar < d.kalan ? " (kısmi)" : "")),
+      taksitIndex: d.idx,
+      taksitAy: d.ay,
+      taksitYil: d.yil,
+      kaydeden: "admin",
+      kayitZamani: new Date().toISOString()
+    };
+    
+    const docRef = db.collection("odemeler").doc(aktifOgrenciId);
+    const doc = await docRef.get();
+    
+    if(doc.exists) {
+      const mevcut = doc.data().odemeler || [];
+      mevcut.push(yeniOdeme);
+      await docRef.update({ odemeler: mevcut, sonGuncelleme: new Date().toISOString() });
+    } else {
+      await docRef.set({
+        odemeler: [yeniOdeme],
+        kaynak: aktifOgrenciKaynak,
+        olusturmaTarihi: new Date().toISOString(),
+        sonGuncelleme: new Date().toISOString()
+      });
+    }
+    
+    hideLoading();
+    showToast("✅ " + fmt(tutar) + " TL ödeme kaydedildi!");
+    
+    await loadOdemeYonetimi();
+    const s = odemeCache.find(x => x.id === aktifOgrenciId && x.kaynak === aktifOgrenciKaynak);
+    if(s) {
+      document.getElementById("om-toplam").textContent = fmt(s.toplamTutar) + " ₺";
+      document.getElementById("om-odenen").textContent = fmt(s.toplamOdenen) + " ₺";
+      document.getElementById("om-kalan").textContent = fmt(s.kalanBakiye) + " ₺";
+      renderTaksitPlani(s);
+    }
+  } catch(e) { hideLoading(); showToast("Hata: " + e.message); }
+}
+
+async function taksitIptal(taksitIdx) {
+  if(!aktifOgrenciId) return;
+  if(!confirm("Bu taksitin ödeme kaydı silinecek. Onaylıyor musunuz?")) return;
+  
+  showLoading("İptal ediliyor...");
+  try {
+    const docRef = db.collection("odemeler").doc(aktifOgrenciId);
+    const doc = await docRef.get();
+    if(!doc.exists) { hideLoading(); return; }
+    
+    let odemeler = doc.data().odemeler || [];
+    odemeler = odemeler.filter(o => o.taksitIndex !== taksitIdx);
+    await docRef.update({ odemeler: odemeler, sonGuncelleme: new Date().toISOString() });
+    
+    hideLoading();
+    showToast("↩ Taksit ödeme kaydı iptal edildi");
+    
+    await loadOdemeYonetimi();
+    const s = odemeCache.find(x => x.id === aktifOgrenciId && x.kaynak === aktifOgrenciKaynak);
+    if(s) {
+      document.getElementById("om-toplam").textContent = fmt(s.toplamTutar) + " ₺";
+      document.getElementById("om-odenen").textContent = fmt(s.toplamOdenen) + " ₺";
+      document.getElementById("om-kalan").textContent = fmt(s.kalanBakiye) + " ₺";
+      renderTaksitPlani(s);
+    }
+  } catch(e) { hideLoading(); showToast("Hata: " + e.message); }
 }
 
 function closeOdemeModal() {
@@ -3035,6 +3207,24 @@ function exportOdemeCSV() {
 .badge-reddedildi { background:#fee2e2; color:#dc2626; padding:3px 10px; border-radius:50px; font-size:11px; font-weight:700; }
 
 /* Ödeme Yönetimi Stilleri */
+.tp-header {
+  display:grid; grid-template-columns:1.5fr 1fr 1fr 1fr 1fr 1.2fr;
+  padding:12px 16px; background:var(--forest-pale);
+  font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; color:var(--forest);
+}
+.tp-row {
+  display:grid; grid-template-columns:1.5fr 1fr 1fr 1fr 1fr 1.2fr;
+  padding:12px 16px; border-bottom:1px solid var(--cream-dark); font-size:13px; align-items:center;
+}
+.tp-btn-ode {
+  padding:5px 10px; background:var(--forest); color:white; border:none; border-radius:6px;
+  font-size:11px; font-weight:600; cursor:pointer; font-family:'Outfit',sans-serif;
+}
+.tp-btn-ode:hover { background:#2D5016; }
+.tp-btn-iptal {
+  padding:5px 10px; background:#fee2e2; color:#dc2626; border:none; border-radius:6px;
+  font-size:11px; font-weight:600; cursor:pointer; font-family:'Outfit',sans-serif;
+}
 .odeme-stat-card {
   background:var(--white); border:1px solid var(--border); border-radius:12px; padding:16px; text-align:center;
 }
@@ -3081,6 +3271,9 @@ function exportOdemeCSV() {
   .odeme-list-header > div:nth-child(4), .odeme-list-row > div:nth-child(4),
   .odeme-list-header > div:nth-child(5), .odeme-list-row > div:nth-child(5) { display:none; }
   .odeme-modal-content { padding:20px; border-radius:16px; }
+  .tp-header, .tp-row { grid-template-columns:1.2fr 0.8fr 0.8fr 1fr; font-size:12px; }
+  .tp-header > div:nth-child(2), .tp-row > div:nth-child(2),
+  .tp-header > div:nth-child(4), .tp-row > div:nth-child(4) { display:none; }
 }
 </style>
 </body>
