@@ -1245,7 +1245,7 @@ input.price-input { font-size:22px; font-weight:600; font-family:'Playfair Displ
 </div>
 
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+<script>
 // ═══════════════════════════════════════════════════════
 // 🔧 YAPILANDIRMA
 // ═══════════════════════════════════════════════════════
@@ -2038,14 +2038,23 @@ function goToAdmin() {
 }
 
 function adminTab(tab) {
-  ["basv","giris","referans"].forEach(t => {
+  ["basv","giris","referans","odeme"].forEach(t => {
     const el = document.getElementById("admin-" + t);
     const btn = document.getElementById("tab-" + t);
     if(el) el.style.display = t === tab ? "block" : "none";
-    if(btn) btn.classList.toggle("active-tab", t === tab);
+    if(btn) {
+      if(t === "odeme") {
+        btn.style.background = t === tab ? "#B8860B" : "var(--amber)";
+        btn.style.color = "white";
+        btn.style.borderColor = t === tab ? "#B8860B" : "var(--amber)";
+      } else {
+        btn.classList.toggle("active-tab", t === tab);
+      }
+    }
   });
   if(tab === "giris") loadGirisList();
   if(tab === "referans") loadRefList();
+  if(tab === "odeme") loadOdemeYonetimi();
 }
 
 async function loadAdminData() {
@@ -2338,6 +2347,7 @@ function scrollToInfo() {
       <button onclick="adminTab('basv')" id="tab-basv" class="admin-tab active-tab">📋 Başvurular</button>
       <button onclick="adminTab('giris')" id="tab-giris" class="admin-tab">🔑 Giriş Listesi</button>
       <button onclick="adminTab('referans')" id="tab-referans" class="admin-tab">🎁 Referans Takibi</button>
+      <button onclick="adminTab('odeme')" id="tab-odeme" class="admin-tab" style="background:var(--amber); color:white; border-color:var(--amber);">💰 Ödeme Yönetimi</button>
     </div>
 
     <!-- Başvurular tablosu -->
@@ -2388,8 +2398,480 @@ function scrollToInfo() {
       </div>
     </div>
 
+    <!-- ═══════════════════════════════════════════ -->
+    <!-- ÖDEME YÖNETİMİ SEKMESİ -->
+    <!-- ═══════════════════════════════════════════ -->
+    <div id="admin-odeme" style="display:none;">
+      
+      <!-- Özet İstatistikler -->
+      <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:24px;">
+        <div class="odeme-stat-card">
+          <div class="odeme-stat-label">Toplam Öğrenci</div>
+          <div class="odeme-stat-val" id="os-toplam">–</div>
+        </div>
+        <div class="odeme-stat-card">
+          <div class="odeme-stat-label">Toplam Alacak</div>
+          <div class="odeme-stat-val" style="color:var(--amber);" id="os-alacak">–</div>
+        </div>
+        <div class="odeme-stat-card">
+          <div class="odeme-stat-label">Toplam Tahsilat</div>
+          <div class="odeme-stat-val" style="color:var(--forest);" id="os-tahsilat">–</div>
+        </div>
+        <div class="odeme-stat-card">
+          <div class="odeme-stat-label">Kalan Bakiye</div>
+          <div class="odeme-stat-val" style="color:#dc2626;" id="os-kalan">–</div>
+        </div>
+      </div>
+
+      <!-- Filtre -->
+      <div style="display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap; align-items:center;">
+        <select id="odeme-filtre-kaynak" onchange="loadOdemeYonetimi()" style="padding:8px 14px; border:1px solid var(--border); border-radius:8px; font-size:13px; font-family:'Outfit',sans-serif;">
+          <option value="hepsi">Tüm Öğrenciler</option>
+          <option value="kayitYenileme">Kayıt Yenileme</option>
+          <option value="yenikayit">Yeni Kayıt</option>
+        </select>
+        <select id="odeme-filtre-durum" onchange="loadOdemeYonetimi()" style="padding:8px 14px; border:1px solid var(--border); border-radius:8px; font-size:13px; font-family:'Outfit',sans-serif;">
+          <option value="hepsi">Tüm Durumlar</option>
+          <option value="geciken">Geciken Ödemeler</option>
+          <option value="tamamlanan">Tamamlanan</option>
+        </select>
+        <div style="flex:1;"></div>
+        <button onclick="exportOdemeCSV()" style="padding:8px 16px; border:1px solid var(--forest); border-radius:8px; font-size:13px; font-weight:600; cursor:pointer; background:var(--forest-pale); color:var(--forest); font-family:'Outfit',sans-serif;">📥 CSV İndir</button>
+      </div>
+
+      <!-- Öğrenci Listesi -->
+      <div style="background:var(--white); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden;">
+        <div class="odeme-list-header">
+          <div>Öğrenci / Veli</div>
+          <div>Program</div>
+          <div>Toplam</div>
+          <div>Ödenen</div>
+          <div>Kalan</div>
+          <div>Durum</div>
+          <div>İşlem</div>
+        </div>
+        <div id="odeme-ogrenci-list" style="max-height:600px; overflow-y:auto;">
+          <div style="padding:40px; text-align:center; color:var(--text-light);">Yükleniyor...</div>
+        </div>
+      </div>
+
+      <!-- Ödeme Detay Modal -->
+      <div id="odeme-modal" class="odeme-modal" style="display:none;">
+        <div class="odeme-modal-content">
+          <div class="odeme-modal-header">
+            <div>
+              <div id="om-ogrenci-adi" style="font-family:'Playfair Display',serif; font-size:22px; font-weight:700; color:var(--text);"></div>
+              <div id="om-veli-adi" style="font-size:13px; color:var(--text-light); margin-top:4px;"></div>
+            </div>
+            <button onclick="closeOdemeModal()" style="background:none; border:none; font-size:24px; cursor:pointer; color:var(--text-light);">✕</button>
+          </div>
+
+          <!-- Bakiye Özeti -->
+          <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin:20px 0;">
+            <div style="background:var(--cream); border-radius:12px; padding:16px; text-align:center;">
+              <div style="font-size:11px; color:var(--text-light); text-transform:uppercase; letter-spacing:0.5px;">Toplam Tutar</div>
+              <div id="om-toplam" style="font-family:'Playfair Display',serif; font-size:24px; font-weight:700; color:var(--text); margin-top:4px;"></div>
+            </div>
+            <div style="background:var(--forest-pale); border-radius:12px; padding:16px; text-align:center;">
+              <div style="font-size:11px; color:var(--forest); text-transform:uppercase; letter-spacing:0.5px;">Ödenen</div>
+              <div id="om-odenen" style="font-family:'Playfair Display',serif; font-size:24px; font-weight:700; color:var(--forest); margin-top:4px;"></div>
+            </div>
+            <div style="background:#FEF2F2; border-radius:12px; padding:16px; text-align:center;">
+              <div style="font-size:11px; color:#dc2626; text-transform:uppercase; letter-spacing:0.5px;">Kalan</div>
+              <div id="om-kalan" style="font-family:'Playfair Display',serif; font-size:24px; font-weight:700; color:#dc2626; margin-top:4px;"></div>
+            </div>
+          </div>
+
+          <!-- Banka Bilgileri -->
+          <div style="background:linear-gradient(135deg, var(--forest) 0%, #2D5016 100%); border-radius:12px; padding:16px; margin-bottom:20px; color:white;">
+            <div style="font-size:13px; font-weight:700; margin-bottom:10px;">🏦 Kuveyt Türk — Havale Bilgileri</div>
+            <div style="font-size:12px; opacity:0.85; line-height:1.8; margin-bottom:10px;">
+              <strong>Birincil Hesap:</strong><br>
+              <strong>Hesap Adı:</strong> EMRAH BAY<br>
+              <strong>IBAN:</strong> <span style="letter-spacing:1px;">TR26 0020 5000 0969 5703 5000 02</span>
+            </div>
+            <div style="font-size:12px; opacity:0.85; line-height:1.8; margin-bottom:10px; padding-top:10px; border-top:1px solid rgba(255,255,255,0.2);">
+              <strong>İkincil Hesap:</strong><br>
+              <strong>Hesap Adı:</strong> NUR ERALP BAY<br>
+              <strong>IBAN:</strong> <span style="letter-spacing:1px;">TR40 0020 5000 0980 5655 2000 01</span>
+            </div>
+            <div style="font-size:12px; opacity:0.85; line-height:1.8;">
+              <strong>Havale Açıklaması:</strong> <span id="om-aciklama" style="font-weight:700;"></span>
+            </div>
+          </div>
+
+          <!-- Taksit Planı -->
+          <div style="font-weight:700; font-size:15px; color:var(--text); margin-bottom:12px;">📅 Taksit Planı & Ödeme Geçmişi</div>
+          <div id="om-taksit-list" style="border:1px solid var(--border); border-radius:12px; overflow:hidden; margin-bottom:20px;"></div>
+
+          <!-- Yeni Ödeme Girişi -->
+          <div style="background:var(--cream); border-radius:12px; padding:20px;">
+            <div style="font-weight:700; font-size:15px; color:var(--text); margin-bottom:16px;">➕ Yeni Ödeme Girişi</div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+              <div>
+                <label class="odeme-form-label">Tutar (TL)</label>
+                <input type="number" id="om-yeni-tutar" placeholder="0" class="odeme-form-input">
+              </div>
+              <div>
+                <label class="odeme-form-label">Tarih</label>
+                <input type="date" id="om-yeni-tarih" class="odeme-form-input">
+              </div>
+              <div>
+                <label class="odeme-form-label">Ödeme Yöntemi</label>
+                <select id="om-yeni-yontem" class="odeme-form-input">
+                  <option value="havale">🏦 Havale</option>
+                  <option value="kredikarti">💳 Kredi Kartı</option>
+                  <option value="nakit">💵 Nakit</option>
+                </select>
+              </div>
+              <div>
+                <label class="odeme-form-label">Açıklama</label>
+                <input type="text" id="om-yeni-aciklama" placeholder="Opsiyonel not" class="odeme-form-input">
+              </div>
+            </div>
+            <button onclick="kaydetOdeme()" style="margin-top:16px; width:100%; padding:14px; background:var(--forest); color:white; border:none; border-radius:10px; font-size:15px; font-weight:700; cursor:pointer; font-family:'Outfit',sans-serif;">✓ Ödemeyi Kaydet</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
   </div>
 </div>
+
+<script>
+// ═══════════════════════════════════════════════════════
+// ÖDEME YÖNETİMİ FONKSİYONLARI
+// ═══════════════════════════════════════════════════════
+
+let odemeCache = [];
+let aktifOgrenciId = null;
+let aktifOgrenciKaynak = null;
+
+async function loadOdemeYonetimi() {
+  const list = document.getElementById("odeme-ogrenci-list");
+  if(!list) return;
+  list.innerHTML = '<div style="padding:40px; text-align:center; color:var(--text-light);">Yükleniyor...</div>';
+  
+  const kaynakFiltre = document.getElementById("odeme-filtre-kaynak")?.value || "hepsi";
+  const durumFiltre = document.getElementById("odeme-filtre-durum")?.value || "hepsi";
+  
+  try {
+    let allStudents = [];
+    
+    // Kayıt Yenileme öğrencileri
+    if(kaynakFiltre === "hepsi" || kaynakFiltre === "kayitYenileme") {
+      const ky = await db.collection("kayitYenileme").where("durum","==","onaylandi").get();
+      ky.forEach(doc => {
+        const d = doc.data();
+        allStudents.push({
+          id: doc.id, kaynak: "kayitYenileme",
+          ogrenciAdi: (d.childFirstName||"") + " " + (d.childLastName||""),
+          veliAdi: (d.parentFirstName||"") + " " + (d.parentLastName||""),
+          email: d.email||"", phone: d.phone||"",
+          program: d.program||"tamgun",
+          toplamTutar: hesaplaToplamKY(d),
+          data: d
+        });
+      });
+    }
+    
+    // Yeni Kayıt öğrencileri
+    if(kaynakFiltre === "hepsi" || kaynakFiltre === "yenikayit") {
+      const yk = await db.collection("yenikayit").where("durum","==","onaylandi").get();
+      yk.forEach(doc => {
+        const d = doc.data();
+        allStudents.push({
+          id: doc.id, kaynak: "yenikayit",
+          ogrenciAdi: (d.childAd||d.childFirstName||"") + " " + (d.childSoyad||d.childLastName||""),
+          veliAdi: (d.parentAd||d.parentFirstName||"") + " " + (d.parentSoyad||d.parentLastName||""),
+          email: d.email||"", phone: d.phone||"",
+          program: d.program||"tam",
+          toplamTutar: hesaplaToplamYK(d),
+          data: d
+        });
+      });
+    }
+    
+    // Her öğrenci için ödeme verilerini çek
+    for(let s of allStudents) {
+      try {
+        const odemeDoc = await db.collection("odemeler").doc(s.id).get();
+        if(odemeDoc.exists) {
+          const od = odemeDoc.data();
+          s.odemeler = od.odemeler || [];
+          s.toplamOdenen = s.odemeler.reduce((t,o) => t + (o.tutar||0), 0);
+        } else {
+          s.odemeler = [];
+          s.toplamOdenen = 0;
+        }
+      } catch(e) { s.odemeler = []; s.toplamOdenen = 0; }
+      s.kalanBakiye = s.toplamTutar - s.toplamOdenen;
+      s.geciken = hesaplaGecikenTaksit(s);
+    }
+    
+    // Durum filtresi
+    if(durumFiltre === "geciken") allStudents = allStudents.filter(s => s.geciken > 0);
+    if(durumFiltre === "tamamlanan") allStudents = allStudents.filter(s => s.kalanBakiye <= 0);
+    
+    odemeCache = allStudents;
+    
+    // İstatistikleri güncelle
+    const topAlacak = allStudents.reduce((t,s) => t + s.toplamTutar, 0);
+    const topTahsilat = allStudents.reduce((t,s) => t + s.toplamOdenen, 0);
+    const el = id => document.getElementById(id);
+    if(el("os-toplam")) el("os-toplam").textContent = allStudents.length;
+    if(el("os-alacak")) el("os-alacak").textContent = fmt(topAlacak) + " ₺";
+    if(el("os-tahsilat")) el("os-tahsilat").textContent = fmt(topTahsilat) + " ₺";
+    if(el("os-kalan")) el("os-kalan").textContent = fmt(topAlacak - topTahsilat) + " ₺";
+    
+    // Listeyi render et
+    if(allStudents.length === 0) {
+      list.innerHTML = '<div style="padding:40px; text-align:center; color:var(--text-light);">Onaylanmış kayıt bulunamadı</div>';
+      return;
+    }
+    
+    list.innerHTML = "";
+    allStudents.forEach(s => {
+      const prog = s.program === "tamgun" || s.program === "tam" ? "Tam Gün" : "Yarım Gün";
+      const kaynakBadge = s.kaynak === "kayitYenileme" 
+        ? '<span style="background:var(--forest-pale); color:var(--forest); padding:2px 8px; border-radius:50px; font-size:10px; font-weight:700;">Mevcut</span>'
+        : '<span style="background:#EDE9FE; color:#7C3AED; padding:2px 8px; border-radius:50px; font-size:10px; font-weight:700;">Yeni</span>';
+      
+      const yuzde = s.toplamTutar > 0 ? Math.round((s.toplamOdenen / s.toplamTutar) * 100) : 0;
+      const durumColor = s.geciken > 0 ? "#dc2626" : s.kalanBakiye <= 0 ? "var(--forest)" : "var(--amber)";
+      const durumText = s.geciken > 0 ? "⚠️ " + s.geciken + " geciken" : s.kalanBakiye <= 0 ? "✅ Tamamlandı" : "⏳ Devam";
+      
+      const row = document.createElement("div");
+      row.className = "odeme-list-row";
+      if(s.geciken > 0) row.style.background = "#FEF2F2";
+      row.innerHTML = `
+        <div>
+          <div style="font-weight:700; color:var(--text);">${s.ogrenciAdi}</div>
+          <div style="font-size:11px; color:var(--text-light);">${s.veliAdi} ${kaynakBadge}</div>
+        </div>
+        <div style="font-size:13px;">${prog}</div>
+        <div style="font-size:13px; font-weight:600;">${fmt(s.toplamTutar)} ₺</div>
+        <div style="font-size:13px; color:var(--forest); font-weight:600;">${fmt(s.toplamOdenen)} ₺</div>
+        <div style="font-size:13px; color:#dc2626; font-weight:600;">${fmt(s.kalanBakiye)} ₺</div>
+        <div>
+          <div style="font-size:12px; color:${durumColor}; font-weight:700;">${durumText}</div>
+          <div style="background:#e5e7eb; border-radius:50px; height:6px; margin-top:4px; overflow:hidden;">
+            <div style="background:${durumColor}; height:100%; width:${yuzde}%; border-radius:50px; transition:width 0.3s;"></div>
+          </div>
+        </div>
+        <div>
+          <button onclick="openOdemeModal('${s.id}','${s.kaynak}')" class="btn-onayla" style="font-size:11px; padding:6px 12px;">💰 Detay</button>
+        </div>`;
+      list.appendChild(row);
+    });
+    
+  } catch(e) {
+    console.error("Ödeme yükleme hatası:", e);
+    list.innerHTML = '<div style="padding:40px; text-align:center; color:red;">Hata: ' + e.message + '</div>';
+  }
+}
+
+function hesaplaToplamKY(d) {
+  // Kayıt yenileme: mevcut ücret × 1.28
+  const mevcut = parseFloat(d.currentFee || d.mevcutUcret || 0);
+  const yeniAylik = Math.round(mevcut * 1.28);
+  return yeniAylik * 10; // 10 ay
+}
+
+function hesaplaToplamYK(d) {
+  // Yeni kayıt: veriden al veya hesapla
+  if(d.toplamTutar) return d.toplamTutar;
+  const aylik = d.iAylik || d.aylikUcret || 0;
+  return aylik * 10;
+}
+
+function hesaplaGecikenTaksit(s) {
+  const now = new Date();
+  const taksitler = getTaksitPlani(s);
+  let geciken = 0;
+  taksitler.forEach(t => {
+    if(new Date(t.tarih) < now && !t.odendi) geciken++;
+  });
+  return geciken;
+}
+
+function getTaksitPlani(s) {
+  const aylikTutar = s.toplamTutar / 10;
+  const aylar = [
+    {ay:"Eylül", no:9}, {ay:"Ekim", no:10}, {ay:"Kasım", no:11}, 
+    {ay:"Aralık", no:12}, {ay:"Ocak", no:1},
+    {ay:"Şubat", no:2}, {ay:"Mart", no:3}, {ay:"Nisan", no:4}, 
+    {ay:"Mayıs", no:5}, {ay:"Haziran", no:6}
+  ];
+  
+  return aylar.map((a, i) => {
+    const yil = a.no >= 9 ? 2026 : 2027;
+    const tarih = `${yil}-${String(a.no).padStart(2,"0")}-05`;
+    const odendi = s.odemeler.some(o => {
+      const oTarih = new Date(o.tarih);
+      return oTarih.getMonth() + 1 === a.no && oTarih.getFullYear() === yil;
+    });
+    const odemeBilgi = s.odemeler.find(o => {
+      const oTarih = new Date(o.tarih);
+      return oTarih.getMonth() + 1 === a.no && oTarih.getFullYear() === yil;
+    });
+    return {
+      ay: a.ay, tarih: tarih, tutar: aylikTutar,
+      odendi: odendi, odemeBilgi: odemeBilgi || null,
+      donem: i < 5 ? "I" : "II"
+    };
+  });
+}
+
+function openOdemeModal(id, kaynak) {
+  aktifOgrenciId = id;
+  aktifOgrenciKaynak = kaynak;
+  const s = odemeCache.find(x => x.id === id && x.kaynak === kaynak);
+  if(!s) return;
+  
+  const el = id => document.getElementById(id);
+  el("om-ogrenci-adi").textContent = s.ogrenciAdi;
+  el("om-veli-adi").textContent = s.veliAdi + " · " + s.email + " · " + (s.kaynak === "kayitYenileme" ? "Kayıt Yenileme" : "Yeni Kayıt");
+  el("om-toplam").textContent = fmt(s.toplamTutar) + " ₺";
+  el("om-odenen").textContent = fmt(s.toplamOdenen) + " ₺";
+  el("om-kalan").textContent = fmt(s.kalanBakiye) + " ₺";
+  el("om-aciklama").textContent = s.ogrenciAdi.replace(/\s/g,"").toUpperCase() + "-2627";
+  
+  // Bugünün tarihini set et
+  el("om-yeni-tarih").value = new Date().toISOString().split("T")[0];
+  el("om-yeni-tutar").value = "";
+  el("om-yeni-aciklama").value = "";
+  
+  // Taksit planını render et
+  renderTaksitPlani(s);
+  
+  document.getElementById("odeme-modal").style.display = "flex";
+}
+
+function renderTaksitPlani(s) {
+  const taksitler = getTaksitPlani(s);
+  const cont = document.getElementById("om-taksit-list");
+  const now = new Date();
+  
+  let html = `<div style="display:grid; grid-template-columns:1.5fr 1fr 1fr 1fr 1.5fr; padding:12px 16px; background:var(--forest-pale); font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; color:var(--forest);">
+    <div>Taksit</div><div>Son Ödeme</div><div>Tutar</div><div>Durum</div><div>Detay</div>
+  </div>`;
+  
+  let currentDonem = "";
+  taksitler.forEach((t, i) => {
+    if(t.donem !== currentDonem) {
+      currentDonem = t.donem;
+      html += `<div style="padding:8px 16px; background:var(--cream); font-size:11px; font-weight:700; color:var(--text-mid);">${t.donem}. Dönem</div>`;
+    }
+    
+    const gecikti = new Date(t.tarih) < now && !t.odendi;
+    const bg = gecikti ? "#FEF2F2" : t.odendi ? "#F0FFF4" : "";
+    const durumIcon = t.odendi ? "✅" : gecikti ? "⚠️" : "⏳";
+    const durumText = t.odendi ? "Ödendi" : gecikti ? "Gecikmiş" : "Bekliyor";
+    const durumColor = t.odendi ? "var(--forest)" : gecikti ? "#dc2626" : "var(--text-light)";
+    const detay = t.odemeBilgi 
+      ? `${t.odemeBilgi.yontem === "havale" ? "🏦" : t.odemeBilgi.yontem === "kredikarti" ? "💳" : "💵"} ${new Date(t.odemeBilgi.tarih).toLocaleDateString("tr-TR")} · ${fmt(t.odemeBilgi.tutar)} ₺` 
+      : "—";
+    
+    html += `<div style="display:grid; grid-template-columns:1.5fr 1fr 1fr 1fr 1.5fr; padding:12px 16px; border-bottom:1px solid var(--cream-dark); font-size:13px; align-items:center; background:${bg};">
+      <div style="font-weight:600;">${t.ay}</div>
+      <div style="color:var(--text-light); font-size:12px;">5 ${t.ay} ${new Date(t.tarih).getFullYear()}</div>
+      <div style="font-weight:600;">${fmt(t.tutar)} ₺</div>
+      <div style="color:${durumColor}; font-weight:700; font-size:12px;">${durumIcon} ${durumText}</div>
+      <div style="font-size:12px; color:var(--text-mid);">${detay}</div>
+    </div>`;
+  });
+  
+  cont.innerHTML = html;
+}
+
+function closeOdemeModal() {
+  document.getElementById("odeme-modal").style.display = "none";
+  aktifOgrenciId = null;
+  aktifOgrenciKaynak = null;
+}
+
+async function kaydetOdeme() {
+  if(!aktifOgrenciId) return;
+  
+  const tutar = parseFloat(document.getElementById("om-yeni-tutar").value);
+  const tarih = document.getElementById("om-yeni-tarih").value;
+  const yontem = document.getElementById("om-yeni-yontem").value;
+  const aciklama = document.getElementById("om-yeni-aciklama").value;
+  
+  if(!tutar || tutar <= 0) { showToast("⚠️ Tutar giriniz"); return; }
+  if(!tarih) { showToast("⚠️ Tarih seçiniz"); return; }
+  
+  if(!confirm(`${fmt(tutar)} TL ödeme kaydedilecek. Onaylıyor musunuz?`)) return;
+  
+  showLoading("Ödeme kaydediliyor...");
+  
+  try {
+    const yeniOdeme = {
+      tutar: tutar,
+      tarih: tarih,
+      yontem: yontem,
+      aciklama: aciklama,
+      kaydeden: "admin",
+      kayitZamani: new Date().toISOString()
+    };
+    
+    const docRef = db.collection("odemeler").doc(aktifOgrenciId);
+    const doc = await docRef.get();
+    
+    if(doc.exists) {
+      const mevcut = doc.data().odemeler || [];
+      mevcut.push(yeniOdeme);
+      await docRef.update({ odemeler: mevcut, sonGuncelleme: new Date().toISOString() });
+    } else {
+      await docRef.set({
+        odemeler: [yeniOdeme],
+        kaynak: aktifOgrenciKaynak,
+        olusturmaTarihi: new Date().toISOString(),
+        sonGuncelleme: new Date().toISOString()
+      });
+    }
+    
+    hideLoading();
+    showToast("✅ Ödeme kaydedildi!");
+    
+    // Refresh
+    await loadOdemeYonetimi();
+    const s = odemeCache.find(x => x.id === aktifOgrenciId && x.kaynak === aktifOgrenciKaynak);
+    if(s) {
+      document.getElementById("om-odenen").textContent = fmt(s.toplamOdenen) + " ₺";
+      document.getElementById("om-kalan").textContent = fmt(s.kalanBakiye) + " ₺";
+      renderTaksitPlani(s);
+    }
+    
+    document.getElementById("om-yeni-tutar").value = "";
+    document.getElementById("om-yeni-aciklama").value = "";
+    
+  } catch(e) {
+    hideLoading();
+    showToast("Hata: " + e.message);
+    console.error("Ödeme kayıt hatası:", e);
+  }
+}
+
+function exportOdemeCSV() {
+  if(!odemeCache.length) { showToast("Veri yok"); return; }
+  
+  let csv = "Ogrenci,Veli,Email,Program,Kaynak,Toplam,Odenen,Kalan,Geciken\n";
+  odemeCache.forEach(s => {
+    const prog = s.program === "tamgun" || s.program === "tam" ? "Tam Gun" : "Yarim Gun";
+    csv += `"${s.ogrenciAdi}","${s.veliAdi}","${s.email}","${prog}","${s.kaynak}",${s.toplamTutar},${s.toplamOdenen},${s.kalanBakiye},${s.geciken}\n`;
+  });
+  
+  const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = "odeme_rapor_" + new Date().toISOString().slice(0,10) + ".csv";
+  link.click();
+  showToast("📥 CSV indirildi");
+}
+</script>
 
 <style>
 .admin-tab {
@@ -2414,4 +2896,57 @@ function scrollToInfo() {
   padding:7px 14px; font-size:12px; font-weight:700; cursor:pointer; margin-left:6px;
 }
 .badge-beklemede { background:#FEF3C7; color:#92400E; padding:3px 10px; border-radius:50px; font-size:11px; font-weight:700; }
-.badge-onaylandi { background:var(--forest-pale); color:var(-
+.badge-onaylandi { background:var(--forest-pale); color:var(--forest); padding:3px 10px; border-radius:50px; font-size:11px; font-weight:700; }
+.badge-reddedildi { background:#fee2e2; color:#dc2626; padding:3px 10px; border-radius:50px; font-size:11px; font-weight:700; }
+
+/* Ödeme Yönetimi Stilleri */
+.odeme-stat-card {
+  background:var(--white); border:1px solid var(--border); border-radius:12px; padding:16px; text-align:center;
+}
+.odeme-stat-label {
+  font-size:11px; text-transform:uppercase; letter-spacing:0.5px; color:var(--text-light); margin-bottom:6px;
+}
+.odeme-stat-val {
+  font-family:'Playfair Display',serif; font-size:24px; font-weight:700; color:var(--text);
+}
+.odeme-list-header {
+  display:grid; grid-template-columns:2fr 0.8fr 1fr 1fr 1fr 1.2fr 0.8fr;
+  gap:8px; padding:14px 20px; background:linear-gradient(135deg, var(--amber) 0%, #D4940C 100%);
+  font-size:11px; text-transform:uppercase; letter-spacing:0.5px; color:white; font-weight:700;
+}
+.odeme-list-row {
+  display:grid; grid-template-columns:2fr 0.8fr 1fr 1fr 1fr 1.2fr 0.8fr;
+  gap:8px; padding:14px 20px; border-bottom:1px solid var(--cream-dark); font-size:13px; align-items:center;
+  transition:background 0.2s;
+}
+.odeme-list-row:hover { background:var(--cream); }
+.odeme-modal {
+  position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:9999;
+  display:flex; align-items:center; justify-content:center; padding:20px;
+}
+.odeme-modal-content {
+  background:white; border-radius:20px; max-width:800px; width:100%;
+  max-height:90vh; overflow-y:auto; padding:32px;
+}
+.odeme-modal-header {
+  display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px;
+}
+.odeme-form-label {
+  display:block; font-size:12px; font-weight:600; color:var(--text-mid); margin-bottom:6px;
+}
+.odeme-form-input {
+  width:100%; padding:10px 14px; border:1px solid var(--border); border-radius:8px;
+  font-size:14px; font-family:'Outfit',sans-serif; box-sizing:border-box;
+}
+@media(max-width:768px) {
+  .odeme-stat-card { padding:12px; }
+  .odeme-stat-val { font-size:18px; }
+  .odeme-list-header, .odeme-list-row { grid-template-columns:1.5fr 1fr 1fr 0.8fr; font-size:12px; }
+  .odeme-list-header > div:nth-child(2), .odeme-list-row > div:nth-child(2),
+  .odeme-list-header > div:nth-child(4), .odeme-list-row > div:nth-child(4),
+  .odeme-list-header > div:nth-child(5), .odeme-list-row > div:nth-child(5) { display:none; }
+  .odeme-modal-content { padding:20px; border-radius:16px; }
+}
+</style>
+</body>
+</html>
