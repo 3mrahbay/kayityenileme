@@ -851,6 +851,18 @@ input.price-input { font-size:22px; font-weight:600; font-family:'Playfair Displ
         </div>
         <div class="action-arrow">→</div>
       </div>
+
+      <div class="action-card" id="odemeCard" style="display:none; border-color:var(--amber); border-width:2px;" onclick="goToOdemeBilgileri()">
+        <div style="flex:1">
+          <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
+            <div class="action-title" style="color:var(--amber);">💰 Ödeme Bilgilerim</div>
+          </div>
+          <div class="action-desc">Ödeme planınızı, taksit durumunuzu ve banka bilgilerini görüntüleyin.</div>
+          <div id="odemeCardOzet" style="margin-top:8px; font-size:12px; font-weight:600;"></div>
+        </div>
+        <div class="action-arrow" style="color:var(--amber);">→</div>
+      </div>
+
       <div class="action-card" id="adminCard" style="display:none; border-color:var(--text);" onclick="goToAdmin()">
         <div style="flex:1">
           <div class="action-title" style="color:var(--text);">🔒 Admin Paneli</div>
@@ -1355,6 +1367,9 @@ async function onLogin(user) {
   // Admin kartını göster/gizle
   const adminCard = document.getElementById("adminCard");
   if(adminCard) adminCard.style.display = user.email === ADMIN_EMAIL ? "flex" : "none";
+  
+  // Ödeme Bilgilerim kartını kontrol et
+  checkOdemeCardVisibility();
 
   // Mevcut kayıt var mı kontrol et — varsa hesap bilgileri göster
   try {
@@ -2301,6 +2316,101 @@ function scrollToInfo() {
 </script>
 
 <!-- ═══════════════════════════════════════════ -->
+<!-- ═══════════════════════════════════════════ -->
+<!-- SCREEN: VELİ ÖDEME BİLGİLERİM -->
+<!-- ═══════════════════════════════════════════ -->
+<div id="screen-odeme-bilgileri" class="screen">
+  <nav class="navbar">
+    <div class="logo"><div class="logo-icon" style="background:transparent; padding:0;"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAYAAABw4pVUAAAAtGVYSWZJSSoACAAAAAYAEgEDAAEAAAABAAAAGgEFAAEAAABWAAAAGwEFAAEAAABeAAAAKAEDAAEAAAACAAAAEwIDAAEAAAABAAAAaYcEAAEAAABmAAAAAAAAAC8ZAQDoAwAALxkBAOgDAAAGAACQBwAEAAAAMDIxMAGRBwAEAAAAAQIDAACgBwAEAAAAMDEwMAGgAwABAAAA//8AAAKgBAABAAAAZAAAAAOgBAABAAAAZAAAAAAAAABBOUXx" style="width:44px;height:44px;border-radius:12px;object-fit:cover;"></div><div><div class="logo-text">Bir Çiçek Koleji</div><div class="logo-sub" style="color:var(--amber);">Ödeme Bilgilerim</div></div></div>
+    <button class="btn-back" onclick="goToScreen('screen-portal')">← Geri</button>
+  </nav>
+
+  <div style="max-width:700px; margin:0 auto; padding:30px 20px; flex:1;">
+
+    <!-- Yükleniyor -->
+    <div id="vob-loading" style="text-align:center; padding:60px 20px; color:var(--text-light);">
+      <div class="spinner" style="margin:0 auto 16px;"></div>
+      Ödeme bilgileriniz yükleniyor...
+    </div>
+
+    <!-- Ödeme planı yoksa -->
+    <div id="vob-bos" style="display:none; text-align:center; padding:60px 20px;">
+      <div style="font-size:48px; margin-bottom:16px;">📋</div>
+      <div style="font-family:'Playfair Display',serif; font-size:20px; font-weight:700; color:var(--text); margin-bottom:8px;">Henüz ödeme planınız oluşturulmamış</div>
+      <div style="font-size:14px; color:var(--text-light); line-height:1.6;">Kayıt yenileme formunu tamamladıktan ve kaydınız onaylandıktan sonra ödeme bilgileriniz burada görünecektir.</div>
+    </div>
+
+    <!-- Ödeme bilgileri içerik -->
+    <div id="vob-icerik" style="display:none;">
+
+      <!-- Bakiye Özeti -->
+      <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:24px;">
+        <div style="background:var(--white); border:1px solid var(--border); border-radius:14px; padding:20px; text-align:center;">
+          <div style="font-size:11px; color:var(--text-light); text-transform:uppercase; letter-spacing:0.5px;">Yıllık Toplam</div>
+          <div id="vob-toplam" style="font-family:'Playfair Display',serif; font-size:22px; font-weight:700; color:var(--text); margin-top:6px;"></div>
+        </div>
+        <div style="background:var(--forest-pale); border:1px solid #C8DEC4; border-radius:14px; padding:20px; text-align:center;">
+          <div style="font-size:11px; color:var(--forest); text-transform:uppercase; letter-spacing:0.5px;">Ödenen</div>
+          <div id="vob-odenen" style="font-family:'Playfair Display',serif; font-size:22px; font-weight:700; color:var(--forest); margin-top:6px;"></div>
+        </div>
+        <div style="background:#FEF2F2; border:1px solid #FECACA; border-radius:14px; padding:20px; text-align:center;">
+          <div style="font-size:11px; color:#dc2626; text-transform:uppercase; letter-spacing:0.5px;">Kalan</div>
+          <div id="vob-kalan" style="font-family:'Playfair Display',serif; font-size:22px; font-weight:700; color:#dc2626; margin-top:6px;"></div>
+        </div>
+      </div>
+
+      <!-- Progress Bar -->
+      <div style="background:var(--white); border:1px solid var(--border); border-radius:14px; padding:20px; margin-bottom:24px;">
+        <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+          <span style="font-size:13px; font-weight:600; color:var(--text-mid);">Ödeme İlerlemesi</span>
+          <span id="vob-yuzde" style="font-size:13px; font-weight:700; color:var(--forest);"></span>
+        </div>
+        <div style="background:#e5e7eb; border-radius:50px; height:10px; overflow:hidden;">
+          <div id="vob-progress" style="background:var(--forest); height:100%; border-radius:50px; transition:width 0.5s;"></div>
+        </div>
+      </div>
+
+      <!-- Taksit Planı -->
+      <div style="background:var(--white); border:1px solid var(--border); border-radius:14px; overflow:hidden; margin-bottom:24px;">
+        <div style="padding:16px 20px; background:var(--forest-pale); border-bottom:1px solid #C8DEC4;">
+          <div style="font-family:'Playfair Display',serif; font-size:17px; font-weight:700; color:var(--forest);">📅 Taksit Planı</div>
+        </div>
+        <div id="vob-taksitler"></div>
+      </div>
+
+      <!-- Diğer Ödemeler (varsa) -->
+      <div id="vob-diger-wrap" style="display:none; background:var(--white); border:1px solid var(--border); border-radius:14px; overflow:hidden; margin-bottom:24px;">
+        <div style="padding:16px 20px; background:var(--amber-pale,#FEF3C7); border-bottom:1px solid #FDE68A;">
+          <div style="font-family:'Playfair Display',serif; font-size:17px; font-weight:700; color:var(--amber);">📋 Diğer Ödemeler</div>
+        </div>
+        <div id="vob-diger-list"></div>
+      </div>
+
+      <!-- Banka Bilgileri -->
+      <div style="background:linear-gradient(135deg, var(--forest) 0%, #2D5016 100%); border-radius:14px; padding:20px; color:white; margin-bottom:24px;">
+        <div style="font-size:15px; font-weight:700; margin-bottom:12px;">🏦 Banka Bilgileri</div>
+        <div style="font-size:13px; opacity:0.9; line-height:2;">
+          <strong>Birincil Hesap:</strong> EMRAH BAY<br>
+          <strong>IBAN:</strong> TR26 0020 5000 0969 5703 5000 02<br>
+          <div style="border-top:1px solid rgba(255,255,255,0.2); margin:8px 0;"></div>
+          <strong>İkincil Hesap:</strong> NUR ERALP BAY<br>
+          <strong>IBAN:</strong> TR40 0020 5000 0980 5655 2000 01
+        </div>
+      </div>
+
+      <!-- İletişim -->
+      <div style="background:var(--cream); border-radius:14px; padding:20px; text-align:center;">
+        <div style="font-size:14px; color:var(--text-mid); margin-bottom:8px;">Sorularınız için bize ulaşın</div>
+        <div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap;">
+          <a href="tel:02163935457" style="padding:10px 20px; background:var(--forest); color:white; border-radius:50px; font-size:13px; font-weight:600; text-decoration:none;">📞 0216 393 54 57</a>
+          <a href="https://wa.me/905551035457" style="padding:10px 20px; background:#25D366; color:white; border-radius:50px; font-size:13px; font-weight:600; text-decoration:none;">💬 WhatsApp</a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
 <!-- SCREEN: ADMIN PANELİ -->
 <!-- ═══════════════════════════════════════════ -->
 <div id="screen-admin" class="screen">
@@ -2601,6 +2711,172 @@ function scrollToInfo() {
 </div>
 
 <script>
+// ═══════════════════════════════════════════════════════
+// VELİ ÖDEME BİLGİLERİM
+// ═══════════════════════════════════════════════════════
+
+async function checkOdemeCardVisibility() {
+  if(!currentUser) return;
+  const odemeCard = document.getElementById("odemeCard");
+  if(!odemeCard) return;
+  
+  try {
+    // Velinin onaylanmış kaydı var mı kontrol et
+    const kayitDoc = await db.collection("kayitYenileme").doc(currentUser.uid).get();
+    if(kayitDoc.exists && kayitDoc.data().durum === "onaylandi") {
+      odemeCard.style.display = "flex";
+      // Özet bilgi göster
+      const d = kayitDoc.data();
+      const toplam = hesaplaToplamKY(d);
+      // Ödeme verilerini çek
+      try {
+        const odemeDoc = await db.collection("odemeler").doc(currentUser.uid).get();
+        const odemeler = odemeDoc.exists ? (odemeDoc.data().odemeler || []) : [];
+        const odenen = odemeler.filter(o => o.tip !== "serbest").reduce((t,o) => t + (o.tutar||0), 0);
+        const kalan = toplam - odenen;
+        const ozet = document.getElementById("odemeCardOzet");
+        if(ozet) {
+          if(kalan <= 0) {
+            ozet.innerHTML = '<span style="color:var(--forest);">✅ Tüm ödemeleriniz tamamlanmış</span>';
+          } else {
+            ozet.innerHTML = `<span style="color:var(--amber);">Kalan: ${fmt(kalan)} ₺</span>`;
+          }
+        }
+      } catch(e) {}
+      return;
+    }
+  } catch(e) {}
+  odemeCard.style.display = "none";
+}
+
+async function goToOdemeBilgileri() {
+  goToScreen("screen-odeme-bilgileri");
+  
+  const loading = document.getElementById("vob-loading");
+  const bos = document.getElementById("vob-bos");
+  const icerik = document.getElementById("vob-icerik");
+  loading.style.display = "block";
+  bos.style.display = "none";
+  icerik.style.display = "none";
+  
+  try {
+    // Kayıt verisini çek
+    const kayitDoc = await db.collection("kayitYenileme").doc(currentUser.uid).get();
+    if(!kayitDoc.exists || kayitDoc.data().durum !== "onaylandi") {
+      loading.style.display = "none";
+      bos.style.display = "block";
+      return;
+    }
+    
+    const d = kayitDoc.data();
+    const toplam = hesaplaToplamKY(d);
+    
+    if(toplam <= 0) {
+      loading.style.display = "none";
+      bos.style.display = "block";
+      return;
+    }
+    
+    // Ödeme verilerini çek
+    let odemeler = [];
+    try {
+      const odemeDoc = await db.collection("odemeler").doc(currentUser.uid).get();
+      if(odemeDoc.exists) odemeler = odemeDoc.data().odemeler || [];
+    } catch(e) {}
+    
+    const taksitOdemeleri = odemeler.filter(o => o.tip !== "serbest");
+    const serbestOdemeler = odemeler.filter(o => o.tip === "serbest");
+    const odenen = taksitOdemeleri.reduce((t,o) => t + (o.tutar||0), 0);
+    const kalan = toplam - odenen;
+    const yuzde = toplam > 0 ? Math.min(100, Math.round((odenen / toplam) * 100)) : 0;
+    
+    // Bakiye kartları
+    document.getElementById("vob-toplam").textContent = fmt(toplam) + " ₺";
+    document.getElementById("vob-odenen").textContent = fmt(odenen) + " ₺";
+    document.getElementById("vob-kalan").textContent = fmt(kalan) + " ₺";
+    document.getElementById("vob-yuzde").textContent = "%" + yuzde;
+    document.getElementById("vob-progress").style.width = yuzde + "%";
+    
+    // Taksit planı
+    const iAylik = d.iDonemAylik || d.yeniAylikUcret || 0;
+    const iiAylik = d.iiDonemAylik || iAylik;
+    const onOdeme = d.onOdeme || d.yeniAylikUcret || 0;
+    
+    const aylar = [
+      {ay:"Eylül (Ön Ödeme)", no:9, tutar:onOdeme, donem:"I"},
+      {ay:"Ekim", no:10, tutar:iAylik, donem:"I"},
+      {ay:"Kasım", no:11, tutar:iAylik, donem:"I"},
+      {ay:"Aralık", no:12, tutar:iAylik, donem:"I"},
+      {ay:"Ocak", no:1, tutar:iAylik, donem:"I"},
+      {ay:"Şubat", no:2, tutar:iiAylik, donem:"II"},
+      {ay:"Mart", no:3, tutar:iiAylik, donem:"II"},
+      {ay:"Nisan", no:4, tutar:iiAylik, donem:"II"},
+      {ay:"Mayıs", no:5, tutar:iiAylik, donem:"II"},
+      {ay:"Haziran", no:6, tutar:iiAylik, donem:"II"}
+    ];
+    
+    const ayIsimleri = {9:"Eylül",10:"Ekim",11:"Kasım",12:"Aralık",1:"Ocak",2:"Şubat",3:"Mart",4:"Nisan",5:"Mayıs",6:"Haziran"};
+    const now = new Date();
+    let taksitHtml = "";
+    let currentDonem = "";
+    
+    aylar.forEach((a, idx) => {
+      const yil = a.no >= 9 ? 2026 : 2027;
+      const tOdemeler = odemeler.filter(o => o.taksitIndex === idx || (o.taksitAy === a.no && o.taksitYil === yil));
+      const tOdenen = tOdemeler.reduce((t,o) => t + (o.tutar||0), 0);
+      const tamOdendi = tOdenen >= a.tutar;
+      const kismi = tOdenen > 0 && tOdenen < a.tutar;
+      const gecikti = new Date(`${yil}-${String(a.no).padStart(2,"0")}-05`) < now && !tamOdendi;
+      
+      if(a.donem !== currentDonem) {
+        currentDonem = a.donem;
+        taksitHtml += `<div style="padding:8px 20px; background:var(--cream); font-size:11px; font-weight:700; color:var(--text-mid);">${a.donem}. Dönem</div>`;
+      }
+      
+      const bg = tamOdendi ? "#F0FFF4" : gecikti ? "#FEF2F2" : kismi ? "#FFFBEB" : "";
+      let durumHtml = "";
+      if(tamOdendi) durumHtml = '<span style="color:var(--forest); font-weight:700; font-size:12px;">✅ Ödendi</span>';
+      else if(kismi) durumHtml = `<span style="color:var(--amber); font-weight:700; font-size:12px;">🔶 ${fmt(tOdenen)} ₺ ödendi</span>`;
+      else if(gecikti) durumHtml = '<span style="color:#dc2626; font-weight:700; font-size:12px;">⚠️ Gecikmiş</span>';
+      else durumHtml = '<span style="color:var(--text-light); font-size:12px;">⏳ Bekliyor</span>';
+      
+      taksitHtml += `<div style="display:grid; grid-template-columns:1.5fr 1fr 1fr 1.2fr; padding:14px 20px; border-bottom:1px solid var(--cream-dark); align-items:center; background:${bg};">
+        <div style="font-weight:600; font-size:14px;">${a.ay}</div>
+        <div style="font-size:12px; color:var(--text-light);">5 ${ayIsimleri[a.no]} ${yil}</div>
+        <div style="font-weight:700; font-size:14px;">${fmt(a.tutar)} ₺</div>
+        <div>${durumHtml}</div>
+      </div>`;
+    });
+    
+    document.getElementById("vob-taksitler").innerHTML = taksitHtml;
+    
+    // Diğer ödemeler
+    if(serbestOdemeler.length > 0) {
+      document.getElementById("vob-diger-wrap").style.display = "block";
+      let digerHtml = "";
+      serbestOdemeler.forEach(o => {
+        const yIcon = o.yontem === "havale" ? "🏦" : o.yontem === "kredikarti" ? "💳" : "💵";
+        digerHtml += `<div style="display:grid; grid-template-columns:2fr 1fr 1fr; padding:12px 20px; border-bottom:1px solid var(--cream-dark); font-size:13px;">
+          <div style="font-weight:600;">${o.odemeAdi || "Ödeme"}</div>
+          <div style="font-weight:600; color:var(--forest);">${fmt(o.tutar)} ₺</div>
+          <div style="color:var(--text-light);">${yIcon} ${new Date(o.tarih).toLocaleDateString("tr-TR")}</div>
+        </div>`;
+      });
+      document.getElementById("vob-diger-list").innerHTML = digerHtml;
+    } else {
+      document.getElementById("vob-diger-wrap").style.display = "none";
+    }
+    
+    loading.style.display = "none";
+    icerik.style.display = "block";
+    
+  } catch(e) {
+    console.error("Ödeme bilgileri hatası:", e);
+    loading.style.display = "none";
+    bos.style.display = "block";
+  }
+}
+
 // ═══════════════════════════════════════════════════════
 // ÖDEME YÖNETİMİ FONKSİYONLARI
 // ═══════════════════════════════════════════════════════
