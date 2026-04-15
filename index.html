@@ -2717,24 +2717,56 @@ async function loadOdemeYonetimi() {
 
 function hesaplaToplamKY(d) {
   // Kayıt yenileme: Sadece eğitim + yemek — servis, materyal, kıyafet dahil değil
-  // Öncelik: adminAylikUcret > yillikToplam > yeniAylikUcret > iDonemAylik > mevcutAylik×1.28
-  if(d.adminAylikUcret && d.adminAylikUcret > 0) return d.adminAylikUcret * 10;
+  // yillikToplam = onOdeme + iDonemAylik×5 + iiDonemAylik×5 (dönem farkı korunur)
   if(d.yillikToplam && d.yillikToplam > 0) return d.yillikToplam;
-  if(d.yeniAylikUcret && d.yeniAylikUcret > 0) return d.yeniAylikUcret * 10;
-  if(d.iDonemAylik && d.iDonemAylik > 0) {
-    const iiAylik = d.iiDonemAylik || d.iDonemAylik;
-    return (d.onOdeme || d.iDonemAylik) + (d.iDonemAylik * 4) + (iiAylik * 5);
+  if(d.onOdeme && d.iDonemAylik && d.iiDonemAylik) {
+    return d.onOdeme + (d.iDonemAylik * 4) + (d.iiDonemAylik * 5);
+  }
+  if(d.adminAylikUcret && d.adminAylikUcret > 0) {
+    const on = d.adminAylikUcret;
+    const kalan = on * 9;
+    const i = Math.round((kalan * 0.488) / 5 / 100) * 100;
+    const ii = Math.round((kalan - i * 5) / 5);
+    return on + i * 5 + ii * 5;
+  }
+  if(d.yeniAylikUcret && d.yeniAylikUcret > 0) {
+    const on = d.yeniAylikUcret;
+    const kalan = on * 9;
+    const i = Math.round((kalan * 0.488) / 5 / 100) * 100;
+    const ii = Math.round((kalan - i * 5) / 5);
+    return on + i * 5 + ii * 5;
   }
   const mevcut = parseFloat(d.mevcutAylikUcret || d.currentFee || d.mevcutUcret || 0);
-  if(mevcut > 0) return Math.round(mevcut * 1.28) * 10;
+  if(mevcut > 0) {
+    const aylik = Math.round(mevcut * 1.28);
+    const kalan = aylik * 9;
+    const i = Math.round((kalan * 0.488) / 5 / 100) * 100;
+    const ii = Math.round((kalan - i * 5) / 5);
+    return aylik + i * 5 + ii * 5;
+  }
   return 0;
 }
 
 function hesaplaToplamYK(d) {
   // Yeni kayıt: Sadece eğitim + yemek — servis, materyal, kıyafet dahil değil
-  if(d.adminAylikUcret && d.adminAylikUcret > 0) return d.adminAylikUcret * 10;
-  if(d.yeniAylikUcret && d.yeniAylikUcret > 0) return d.yeniAylikUcret * 10;
-  if(d.toplamTutar && d.toplamTutar > 0) return d.toplamTutar;
+  if(d.yillikToplam && d.yillikToplam > 0) return d.yillikToplam;
+  if(d.onOdeme && d.iDonemAylik && d.iiDonemAylik) {
+    return d.onOdeme + (d.iDonemAylik * 4) + (d.iiDonemAylik * 5);
+  }
+  if(d.adminAylikUcret && d.adminAylikUcret > 0) {
+    const on = d.adminAylikUcret;
+    const kalan = on * 9;
+    const i = Math.round((kalan * 0.488) / 5 / 100) * 100;
+    const ii = Math.round((kalan - i * 5) / 5);
+    return on + i * 5 + ii * 5;
+  }
+  if(d.yeniAylikUcret && d.yeniAylikUcret > 0) {
+    const on = d.yeniAylikUcret;
+    const kalan = on * 9;
+    const i = Math.round((kalan * 0.488) / 5 / 100) * 100;
+    const ii = Math.round((kalan - i * 5) / 5);
+    return on + i * 5 + ii * 5;
+  }
   const aylik = d.iAylik || d.aylikUcret || 0;
   if(aylik > 0) return aylik * 10;
   return 0;
@@ -2849,33 +2881,47 @@ async function kaydetAylikUcret() {
   const aylik = parseInt(document.getElementById("om-aylik-ucret").value) || 0;
   if(aylik <= 0) { showToast("⚠️ Geçerli bir aylık ücret giriniz"); return; }
   
-  if(!confirm(`Aylık ücret ${fmt(aylik)} TL olarak kaydedilecek.\nYıllık toplam: ${fmt(aylik * 10)} TL\n\nOnaylıyor musunuz?`)) return;
+  // Ödeme planı hesapla — velinin kayıt olurkenki mantıkla aynı
+  const onOdeme = aylik;
+  const kalan = aylik * 9;
+  const iDonemAylik = Math.round((kalan * 0.488) / 5 / 100) * 100;
+  const iiDonemAylik = Math.round((kalan - iDonemAylik * 5) / 5);
+  const yillikToplam = onOdeme + iDonemAylik * 5 + iiDonemAylik * 5;
+  
+  if(!confirm(`Aylık ücret: ${fmt(aylik)} TL\nÖn Ödeme: ${fmt(onOdeme)} TL\nI. Dönem aylık: ${fmt(iDonemAylik)} TL\nII. Dönem aylık: ${fmt(iiDonemAylik)} TL\nYıllık toplam: ${fmt(yillikToplam)} TL\n\nOnaylıyor musunuz?`)) return;
   
   showLoading("Ücret kaydediliyor...");
   
   try {
-    // Orijinal kayıt dökümanına aylık ücreti yaz
     await db.collection(aktifOgrenciKaynak).doc(aktifOgrenciId).update({
       adminAylikUcret: aylik,
       yeniAylikUcret: aylik,
-      iDonemAylik: aylik,
-      iiDonemAylik: aylik,
-      yillikToplam: aylik * 10,
-      onOdeme: aylik,
+      onOdeme: onOdeme,
+      iDonemAylik: iDonemAylik,
+      iiDonemAylik: iiDonemAylik,
+      yillikToplam: yillikToplam,
       ucretGuncellemeTarihi: new Date().toISOString()
     });
     
     hideLoading();
-    showToast("✅ Aylık ücret kaydedildi: " + fmt(aylik) + " TL");
-    
-    document.getElementById("om-ucret-mevcut").textContent = "✅ Kayıtlı aylık ücret: " + fmt(aylik) + " TL";
+    showToast("✅ Ödeme planı kaydedildi!");
     
     // Listeyi ve modalı yenile
     await loadOdemeYonetimi();
     const s = odemeCache.find(x => x.id === aktifOgrenciId && x.kaynak === aktifOgrenciKaynak);
     if(s) {
       document.getElementById("om-toplam").textContent = fmt(s.toplamTutar) + " ₺";
+      document.getElementById("om-odenen").textContent = fmt(s.toplamOdenen) + " ₺";
       document.getElementById("om-kalan").textContent = fmt(s.kalanBakiye) + " ₺";
+      // Ücret alanını güncelle
+      const ucretAyar = document.getElementById("om-ucret-ayar");
+      ucretAyar.style.background = "linear-gradient(135deg, var(--forest) 0%, #2D5016 100%)";
+      document.getElementById("om-ucret-otomatik").style.display = "block";
+      document.getElementById("om-ucret-bos").style.display = "none";
+      document.getElementById("om-ucret-manuel").style.display = "none";
+      document.getElementById("om-oto-aylik").textContent = fmt(aylik) + " ₺";
+      document.getElementById("om-oto-yillik").textContent = fmt(yillikToplam) + " ₺";
+      document.getElementById("om-oto-kaynak").textContent = "Admin girişi";
       renderTaksitPlani(s);
     }
     
