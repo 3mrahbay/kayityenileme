@@ -2466,6 +2466,30 @@ function scrollToInfo() {
             <button onclick="closeOdemeModal()" style="background:none; border:none; font-size:24px; cursor:pointer; color:var(--text-light);">✕</button>
           </div>
 
+          <!-- Aylık Ücret Belirleme -->
+          <div id="om-ucret-ayar" style="background:linear-gradient(135deg, var(--amber) 0%, #D4940C 100%); border-radius:12px; padding:16px; margin:16px 0; color:white;">
+            <div style="font-size:13px; font-weight:700; margin-bottom:10px;">💰 Anlaşılan Aylık Ücret</div>
+            <div style="display:grid; grid-template-columns:1fr 1fr auto; gap:10px; align-items:end;">
+              <div>
+                <div style="font-size:11px; opacity:0.7; margin-bottom:4px;">Aylık Eğitim+Yemek Ücreti (TL)</div>
+                <input type="number" id="om-aylik-ucret" placeholder="Örn: 7400" style="width:100%; padding:10px 14px; border:2px solid rgba(255,255,255,0.3); border-radius:8px; font-size:16px; font-weight:700; font-family:'Outfit',sans-serif; background:rgba(255,255,255,0.15); color:white; box-sizing:border-box;" oninput="this.style.borderColor='rgba(255,255,255,0.6)'">
+              </div>
+              <div>
+                <div style="font-size:11px; opacity:0.7; margin-bottom:4px;">Yıllık Toplam (10 ay)</div>
+                <div id="om-yillik-onizleme" style="padding:10px 14px; background:rgba(255,255,255,0.1); border-radius:8px; font-size:16px; font-weight:700;">–</div>
+              </div>
+              <button onclick="kaydetAylikUcret()" style="padding:10px 20px; background:white; color:#B8860B; border:none; border-radius:8px; font-size:13px; font-weight:700; cursor:pointer; font-family:'Outfit',sans-serif; white-space:nowrap;">✓ Kaydet</button>
+            </div>
+            <div id="om-ucret-mevcut" style="font-size:12px; opacity:0.7; margin-top:8px;"></div>
+          </div>
+
+          <script>
+          document.getElementById("om-aylik-ucret").addEventListener("input", function() {
+            const val = parseInt(this.value) || 0;
+            document.getElementById("om-yillik-onizleme").textContent = val > 0 ? fmt(val * 10) + " ₺" : "–";
+          });
+          </script>
+
           <!-- Bakiye Özeti -->
           <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin:20px 0;">
             <div style="background:var(--cream); border-radius:12px; padding:16px; text-align:center;">
@@ -2490,13 +2514,10 @@ function scrollToInfo() {
               <strong>Hesap Adı:</strong> EMRAH BAY<br>
               <strong>IBAN:</strong> <span style="letter-spacing:1px;">TR26 0020 5000 0969 5703 5000 02</span>
             </div>
-            <div style="font-size:12px; opacity:0.85; line-height:1.8; margin-bottom:10px; padding-top:10px; border-top:1px solid rgba(255,255,255,0.2);">
+            <div style="font-size:12px; opacity:0.85; line-height:1.8; padding-top:10px; border-top:1px solid rgba(255,255,255,0.2);">
               <strong>İkincil Hesap:</strong><br>
               <strong>Hesap Adı:</strong> NUR ERALP BAY<br>
               <strong>IBAN:</strong> <span style="letter-spacing:1px;">TR40 0020 5000 0980 5655 2000 01</span>
-            </div>
-            <div style="font-size:12px; opacity:0.85; line-height:1.8;">
-              <strong>Havale Açıklaması:</strong> <span id="om-aciklama" style="font-weight:700;"></span>
             </div>
           </div>
 
@@ -2673,17 +2694,28 @@ async function loadOdemeYonetimi() {
 }
 
 function hesaplaToplamKY(d) {
-  // Kayıt yenileme: mevcut ücret × 1.28
-  const mevcut = parseFloat(d.currentFee || d.mevcutUcret || 0);
-  const yeniAylik = Math.round(mevcut * 1.28);
-  return yeniAylik * 10; // 10 ay
+  // Kayıt yenileme: Sadece eğitim + yemek — servis, materyal, kıyafet dahil değil
+  // Öncelik: adminAylikUcret > yillikToplam > yeniAylikUcret > iDonemAylik > mevcutAylik×1.28
+  if(d.adminAylikUcret && d.adminAylikUcret > 0) return d.adminAylikUcret * 10;
+  if(d.yillikToplam && d.yillikToplam > 0) return d.yillikToplam;
+  if(d.yeniAylikUcret && d.yeniAylikUcret > 0) return d.yeniAylikUcret * 10;
+  if(d.iDonemAylik && d.iDonemAylik > 0) {
+    const iiAylik = d.iiDonemAylik || d.iDonemAylik;
+    return (d.onOdeme || d.iDonemAylik) + (d.iDonemAylik * 4) + (iiAylik * 5);
+  }
+  const mevcut = parseFloat(d.mevcutAylikUcret || d.currentFee || d.mevcutUcret || 0);
+  if(mevcut > 0) return Math.round(mevcut * 1.28) * 10;
+  return 0;
 }
 
 function hesaplaToplamYK(d) {
-  // Yeni kayıt: veriden al veya hesapla
-  if(d.toplamTutar) return d.toplamTutar;
+  // Yeni kayıt: Sadece eğitim + yemek — servis, materyal, kıyafet dahil değil
+  if(d.adminAylikUcret && d.adminAylikUcret > 0) return d.adminAylikUcret * 10;
+  if(d.yeniAylikUcret && d.yeniAylikUcret > 0) return d.yeniAylikUcret * 10;
+  if(d.toplamTutar && d.toplamTutar > 0) return d.toplamTutar;
   const aylik = d.iAylik || d.aylikUcret || 0;
-  return aylik * 10;
+  if(aylik > 0) return aylik * 10;
+  return 0;
 }
 
 function hesaplaGecikenTaksit(s) {
@@ -2697,15 +2729,26 @@ function hesaplaGecikenTaksit(s) {
 }
 
 function getTaksitPlani(s) {
-  const aylikTutar = s.toplamTutar / 10;
+  const d = s.data || {};
+  // I. Dönem ve II. Dönem aylıkları farklı olabilir
+  const iAylik = d.iDonemAylik || d.iAylik || (s.toplamTutar / 10);
+  const iiAylik = d.iiDonemAylik || d.iiAylik || iAylik;
+  const onOdeme = d.onOdeme || iAylik; // Ön ödeme = 1 aylık
+
   const aylar = [
-    {ay:"Eylül", no:9}, {ay:"Ekim", no:10}, {ay:"Kasım", no:11}, 
-    {ay:"Aralık", no:12}, {ay:"Ocak", no:1},
-    {ay:"Şubat", no:2}, {ay:"Mart", no:3}, {ay:"Nisan", no:4}, 
-    {ay:"Mayıs", no:5}, {ay:"Haziran", no:6}
+    {ay:"Eylül", no:9, donem:"I", tutar: onOdeme, label:"Ön Ödeme + Eylül"},
+    {ay:"Ekim", no:10, donem:"I", tutar: iAylik},
+    {ay:"Kasım", no:11, donem:"I", tutar: iAylik}, 
+    {ay:"Aralık", no:12, donem:"I", tutar: iAylik},
+    {ay:"Ocak", no:1, donem:"I", tutar: iAylik},
+    {ay:"Şubat", no:2, donem:"II", tutar: iiAylik},
+    {ay:"Mart", no:3, donem:"II", tutar: iiAylik},
+    {ay:"Nisan", no:4, donem:"II", tutar: iiAylik},
+    {ay:"Mayıs", no:5, donem:"II", tutar: iiAylik},
+    {ay:"Haziran", no:6, donem:"II", tutar: iiAylik}
   ];
   
-  return aylar.map((a, i) => {
+  return aylar.map((a) => {
     const yil = a.no >= 9 ? 2026 : 2027;
     const tarih = `${yil}-${String(a.no).padStart(2,"0")}-05`;
     const odendi = s.odemeler.some(o => {
@@ -2717,9 +2760,9 @@ function getTaksitPlani(s) {
       return oTarih.getMonth() + 1 === a.no && oTarih.getFullYear() === yil;
     });
     return {
-      ay: a.ay, tarih: tarih, tutar: aylikTutar,
+      ay: a.label || a.ay, tarih: tarih, tutar: a.tutar,
       odendi: odendi, odemeBilgi: odemeBilgi || null,
-      donem: i < 5 ? "I" : "II"
+      donem: a.donem
     };
   });
 }
@@ -2730,13 +2773,21 @@ function openOdemeModal(id, kaynak) {
   const s = odemeCache.find(x => x.id === id && x.kaynak === kaynak);
   if(!s) return;
   
-  const el = id => document.getElementById(id);
+  const el = i => document.getElementById(i);
   el("om-ogrenci-adi").textContent = s.ogrenciAdi;
   el("om-veli-adi").textContent = s.veliAdi + " · " + s.email + " · " + (s.kaynak === "kayitYenileme" ? "Kayıt Yenileme" : "Yeni Kayıt");
   el("om-toplam").textContent = fmt(s.toplamTutar) + " ₺";
   el("om-odenen").textContent = fmt(s.toplamOdenen) + " ₺";
   el("om-kalan").textContent = fmt(s.kalanBakiye) + " ₺";
-  el("om-aciklama").textContent = s.ogrenciAdi.replace(/\s/g,"").toUpperCase() + "-2627";
+  
+  // Aylık ücret alanını doldur
+  const d = s.data || {};
+  const mevcutAylik = d.adminAylikUcret || d.yeniAylikUcret || d.iDonemAylik || 0;
+  el("om-aylik-ucret").value = mevcutAylik > 0 ? mevcutAylik : "";
+  el("om-yillik-onizleme").textContent = mevcutAylik > 0 ? fmt(mevcutAylik * 10) + " ₺" : "–";
+  el("om-ucret-mevcut").textContent = mevcutAylik > 0 
+    ? "✅ Kayıtlı aylık ücret: " + fmt(mevcutAylik) + " TL" 
+    : "⚠️ Henüz aylık ücret belirlenmemiş — yukarıdan giriniz";
   
   // Bugünün tarihini set et
   el("om-yeni-tarih").value = new Date().toISOString().split("T")[0];
@@ -2747,6 +2798,48 @@ function openOdemeModal(id, kaynak) {
   renderTaksitPlani(s);
   
   document.getElementById("odeme-modal").style.display = "flex";
+}
+
+async function kaydetAylikUcret() {
+  if(!aktifOgrenciId || !aktifOgrenciKaynak) return;
+  
+  const aylik = parseInt(document.getElementById("om-aylik-ucret").value) || 0;
+  if(aylik <= 0) { showToast("⚠️ Geçerli bir aylık ücret giriniz"); return; }
+  
+  if(!confirm(`Aylık ücret ${fmt(aylik)} TL olarak kaydedilecek.\nYıllık toplam: ${fmt(aylik * 10)} TL\n\nOnaylıyor musunuz?`)) return;
+  
+  showLoading("Ücret kaydediliyor...");
+  
+  try {
+    // Orijinal kayıt dökümanına aylık ücreti yaz
+    await db.collection(aktifOgrenciKaynak).doc(aktifOgrenciId).update({
+      adminAylikUcret: aylik,
+      yeniAylikUcret: aylik,
+      iDonemAylik: aylik,
+      iiDonemAylik: aylik,
+      yillikToplam: aylik * 10,
+      onOdeme: aylik,
+      ucretGuncellemeTarihi: new Date().toISOString()
+    });
+    
+    hideLoading();
+    showToast("✅ Aylık ücret kaydedildi: " + fmt(aylik) + " TL");
+    
+    document.getElementById("om-ucret-mevcut").textContent = "✅ Kayıtlı aylık ücret: " + fmt(aylik) + " TL";
+    
+    // Listeyi ve modalı yenile
+    await loadOdemeYonetimi();
+    const s = odemeCache.find(x => x.id === aktifOgrenciId && x.kaynak === aktifOgrenciKaynak);
+    if(s) {
+      document.getElementById("om-toplam").textContent = fmt(s.toplamTutar) + " ₺";
+      document.getElementById("om-kalan").textContent = fmt(s.kalanBakiye) + " ₺";
+      renderTaksitPlani(s);
+    }
+    
+  } catch(e) {
+    hideLoading();
+    showToast("Hata: " + e.message);
+  }
 }
 
 function renderTaksitPlani(s) {
