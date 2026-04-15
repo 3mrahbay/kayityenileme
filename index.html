@@ -2546,12 +2546,29 @@ function scrollToInfo() {
           <div id="om-taksit-list" style="border:1px solid var(--border); border-radius:12px; overflow:hidden; margin-bottom:20px;"></div>
 
           <!-- Yeni Ödeme Girişi (Serbest) -->
+          <!-- Serbest Ödemeler Listesi -->
+          <div id="om-serbest-list" style="margin-bottom:16px;"></div>
+
           <details style="background:var(--cream); border-radius:12px; padding:4px 20px;">
-            <summary style="font-weight:700; font-size:14px; color:var(--text-mid); cursor:pointer; padding:14px 0;">➕ Serbest Ödeme Girişi <span style="font-size:11px; font-weight:400; color:var(--text-light);">(taksit dışı ödemeler için)</span></summary>
+            <summary style="font-weight:700; font-size:14px; color:var(--text-mid); cursor:pointer; padding:14px 0;">➕ Serbest Ödeme Girişi <span style="font-size:11px; font-weight:400; color:var(--text-light);">(kırtasiye, servis, materyal vb.)</span></summary>
             <div style="padding-bottom:20px;">
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
               <div>
-                <label class="odeme-form-label">Tutar (TL)</label>
+                <label class="odeme-form-label">Ödeme Adı *</label>
+                <select id="om-yeni-ad" class="odeme-form-input" onchange="if(this.value==='diger') document.getElementById('om-yeni-ad-diger').style.display='block'; else document.getElementById('om-yeni-ad-diger').style.display='none';">
+                  <option value="">Seçiniz...</option>
+                  <option value="Kırtasiye / Eğitim Materyali">📦 Kırtasiye / Eğitim Materyali</option>
+                  <option value="Orman Okulu Servis">🚐 Orman Okulu Servis</option>
+                  <option value="Orman Okulu Kıyafet">👕 Orman Okulu Kıyafet</option>
+                  <option value="Yemek Ücreti (Ek)">🍽️ Yemek Ücreti (Ek)</option>
+                  <option value="Etkinlik Ücreti">🎨 Etkinlik Ücreti</option>
+                  <option value="Depozito">🔑 Depozito</option>
+                  <option value="diger">✏️ Diğer (elle yazın)</option>
+                </select>
+                <input type="text" id="om-yeni-ad-diger" placeholder="Ödeme adını yazın" class="odeme-form-input" style="display:none; margin-top:6px;">
+              </div>
+              <div>
+                <label class="odeme-form-label">Tutar (TL) *</label>
                 <input type="number" id="om-yeni-tutar" placeholder="0" class="odeme-form-input">
               </div>
               <div>
@@ -2566,10 +2583,10 @@ function scrollToInfo() {
                   <option value="nakit">💵 Nakit</option>
                 </select>
               </div>
-              <div>
-                <label class="odeme-form-label">Açıklama</label>
-                <input type="text" id="om-yeni-aciklama" placeholder="Opsiyonel not" class="odeme-form-input">
-              </div>
+            </div>
+            <div style="margin-top:12px;">
+              <label class="odeme-form-label">Not (opsiyonel)</label>
+              <input type="text" id="om-yeni-aciklama" placeholder="Ek açıklama" class="odeme-form-input">
             </div>
             <button onclick="kaydetOdeme()" style="margin-top:16px; width:100%; padding:14px; background:var(--forest); color:white; border:none; border-radius:10px; font-size:15px; font-weight:700; cursor:pointer; font-family:'Outfit',sans-serif;">✓ Ödemeyi Kaydet</button>
             </div>
@@ -2643,7 +2660,8 @@ async function loadOdemeYonetimi() {
         if(odemeDoc.exists) {
           const od = odemeDoc.data();
           s.odemeler = od.odemeler || [];
-          s.toplamOdenen = s.odemeler.reduce((t,o) => t + (o.tutar||0), 0);
+          s.toplamOdenen = s.odemeler.filter(o => o.tip !== "serbest").reduce((t,o) => t + (o.tutar||0), 0);
+          s.toplamSerbest = s.odemeler.filter(o => o.tip === "serbest").reduce((t,o) => t + (o.tutar||0), 0);
         } else {
           s.odemeler = [];
           s.toplamOdenen = 0;
@@ -2871,6 +2889,7 @@ function openOdemeModal(id, kaynak) {
   
   // Taksit planını render et
   renderTaksitPlani(s);
+  renderSerbestOdemeler(s);
   
   document.getElementById("odeme-modal").style.display = "flex";
 }
@@ -3148,6 +3167,10 @@ function closeOdemeModal() {
 async function kaydetOdeme() {
   if(!aktifOgrenciId) return;
   
+  let odemeAdi = document.getElementById("om-yeni-ad").value;
+  if(odemeAdi === "diger") odemeAdi = document.getElementById("om-yeni-ad-diger").value.trim();
+  if(!odemeAdi) { showToast("⚠️ Ödeme adı seçiniz"); return; }
+  
   const tutar = parseFloat(document.getElementById("om-yeni-tutar").value);
   const tarih = document.getElementById("om-yeni-tarih").value;
   const yontem = document.getElementById("om-yeni-yontem").value;
@@ -3156,7 +3179,7 @@ async function kaydetOdeme() {
   if(!tutar || tutar <= 0) { showToast("⚠️ Tutar giriniz"); return; }
   if(!tarih) { showToast("⚠️ Tarih seçiniz"); return; }
   
-  if(!confirm(`${fmt(tutar)} TL ödeme kaydedilecek. Onaylıyor musunuz?`)) return;
+  if(!confirm(`${odemeAdi}: ${fmt(tutar)} TL kaydedilecek. Onaylıyor musunuz?`)) return;
   
   showLoading("Ödeme kaydediliyor...");
   
@@ -3165,7 +3188,9 @@ async function kaydetOdeme() {
       tutar: tutar,
       tarih: tarih,
       yontem: yontem,
+      odemeAdi: odemeAdi,
       aciklama: aciklama,
+      tip: "serbest",
       kaydeden: "admin",
       kayitZamani: new Date().toISOString()
     };
@@ -3187,7 +3212,7 @@ async function kaydetOdeme() {
     }
     
     hideLoading();
-    showToast("✅ Ödeme kaydedildi!");
+    showToast("✅ " + odemeAdi + " kaydedildi!");
     
     // Refresh
     await loadOdemeYonetimi();
@@ -3196,16 +3221,88 @@ async function kaydetOdeme() {
       document.getElementById("om-odenen").textContent = fmt(s.toplamOdenen) + " ₺";
       document.getElementById("om-kalan").textContent = fmt(s.kalanBakiye) + " ₺";
       renderTaksitPlani(s);
+      renderSerbestOdemeler(s);
     }
     
     document.getElementById("om-yeni-tutar").value = "";
     document.getElementById("om-yeni-aciklama").value = "";
+    document.getElementById("om-yeni-ad").value = "";
+    document.getElementById("om-yeni-ad-diger").value = "";
+    document.getElementById("om-yeni-ad-diger").style.display = "none";
     
   } catch(e) {
     hideLoading();
     showToast("Hata: " + e.message);
     console.error("Ödeme kayıt hatası:", e);
   }
+}
+
+function renderSerbestOdemeler(s) {
+  const cont = document.getElementById("om-serbest-list");
+  if(!cont) return;
+  const serbest = s.odemeler.filter(o => o.tip === "serbest");
+  if(serbest.length === 0) { cont.innerHTML = ""; return; }
+  
+  let html = `<div style="font-weight:700; font-size:15px; color:var(--text); margin-bottom:10px;">📋 Diğer Ödemeler</div>`;
+  html += `<div style="border:1px solid var(--border); border-radius:12px; overflow:hidden;">`;
+  html += `<div style="display:grid; grid-template-columns:2fr 1fr 1fr 1fr auto; padding:10px 16px; background:var(--cream); font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; color:var(--text-mid);">
+    <div>Ödeme Adı</div><div>Tutar</div><div>Tarih</div><div>Yöntem</div><div></div>
+  </div>`;
+  
+  serbest.forEach((o, i) => {
+    const yontemIcon = o.yontem === "havale" ? "🏦" : o.yontem === "kredikarti" ? "💳" : "💵";
+    const tarihStr = new Date(o.tarih).toLocaleDateString("tr-TR");
+    html += `<div style="display:grid; grid-template-columns:2fr 1fr 1fr 1fr auto; padding:10px 16px; border-bottom:1px solid var(--cream-dark); font-size:13px; align-items:center;">
+      <div style="font-weight:600;">${o.odemeAdi || o.aciklama || "Serbest ödeme"}${o.aciklama && o.odemeAdi ? '<div style="font-size:11px; color:var(--text-light);">' + o.aciklama + '</div>' : ''}</div>
+      <div style="font-weight:600; color:var(--forest);">${fmt(o.tutar)} ₺</div>
+      <div style="font-size:12px; color:var(--text-light);">${tarihStr}</div>
+      <div style="font-size:12px;">${yontemIcon}</div>
+      <div><button onclick="silSerbestOdeme(${i})" style="padding:3px 8px; background:#fee2e2; color:#dc2626; border:none; border-radius:4px; font-size:10px; cursor:pointer;">✕</button></div>
+    </div>`;
+  });
+  
+  const topSerbest = serbest.reduce((t,o) => t + (o.tutar||0), 0);
+  html += `<div style="display:grid; grid-template-columns:2fr 1fr 1fr 1fr auto; padding:10px 16px; background:var(--cream); font-size:13px; font-weight:700;">
+    <div>Toplam</div><div style="color:var(--forest);">${fmt(topSerbest)} ₺</div><div></div><div></div><div></div>
+  </div>`;
+  html += `</div>`;
+  cont.innerHTML = html;
+}
+
+async function silSerbestOdeme(serbestIdx) {
+  if(!aktifOgrenciId) return;
+  if(!confirm("Bu ödeme kaydı silinecek. Onaylıyor musunuz?")) return;
+  
+  showLoading("Siliniyor...");
+  try {
+    const docRef = db.collection("odemeler").doc(aktifOgrenciId);
+    const doc = await docRef.get();
+    if(!doc.exists) { hideLoading(); return; }
+    
+    let odemeler = doc.data().odemeler || [];
+    // Serbest ödemeleri filtrele ve index'e göre sil
+    let serbestCount = 0;
+    odemeler = odemeler.filter(o => {
+      if(o.tip === "serbest") {
+        if(serbestCount === serbestIdx) { serbestCount++; return false; }
+        serbestCount++;
+      }
+      return true;
+    });
+    
+    await docRef.update({ odemeler: odemeler, sonGuncelleme: new Date().toISOString() });
+    hideLoading();
+    showToast("✕ Ödeme silindi");
+    
+    await loadOdemeYonetimi();
+    const s = odemeCache.find(x => x.id === aktifOgrenciId && x.kaynak === aktifOgrenciKaynak);
+    if(s) {
+      document.getElementById("om-odenen").textContent = fmt(s.toplamOdenen) + " ₺";
+      document.getElementById("om-kalan").textContent = fmt(s.kalanBakiye) + " ₺";
+      renderTaksitPlani(s);
+      renderSerbestOdemeler(s);
+    }
+  } catch(e) { hideLoading(); showToast("Hata: " + e.message); }
 }
 
 function exportOdemeCSV() {
