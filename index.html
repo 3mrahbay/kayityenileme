@@ -1371,11 +1371,12 @@ async function onLogin(user) {
   // Ödeme Bilgilerim kartını kontrol et
   checkOdemeCardVisibility();
 
-  // Mevcut kayıt var mı kontrol et — varsa hesap bilgileri göster
+  // Mevcut kayıt var mı kontrol et
   try {
     const snap = await db.collection("kayitYenileme").doc(user.uid).get();
     if (snap.exists) {
-      goToScreen("screen-hesap-bilgileri");
+      // Kayıt var — portale gönder, orada hem hesap bilgileri hem ödeme kartı görünür
+      goToScreen("screen-portal");
       return;
     }
   } catch(e) { console.log("Kayıt kontrol hatası:", e); }
@@ -2698,31 +2699,36 @@ async function checkOdemeCardVisibility() {
   if(!odemeCard) return;
   
   try {
-    // Velinin onaylanmış kaydı var mı kontrol et
+    // Velinin kaydı var mı kontrol et (onaylandi VEYA beklemede)
     const kayitDoc = await db.collection("kayitYenileme").doc(currentUser.uid).get();
-    if(kayitDoc.exists && kayitDoc.data().durum === "onaylandi") {
-      odemeCard.style.display = "flex";
-      // Özet bilgi göster
+    if(kayitDoc.exists) {
       const d = kayitDoc.data();
+      const durum = d.durum;
+      // Ödeme planı bilgisi varsa göster
       const toplam = hesaplaToplamKY(d);
-      // Ödeme verilerini çek
-      try {
-        const odemeDoc = await db.collection("odemeler").doc(currentUser.uid).get();
-        const odemeler = odemeDoc.exists ? (odemeDoc.data().odemeler || []) : [];
-        const odenen = odemeler.filter(o => o.tip !== "serbest").reduce((t,o) => t + (o.tutar||0), 0);
-        const kalan = toplam - odenen;
+      if(toplam > 0 || durum === "onaylandi" || durum === "beklemede") {
+        odemeCard.style.display = "flex";
         const ozet = document.getElementById("odemeCardOzet");
-        if(ozet) {
-          if(kalan <= 0) {
-            ozet.innerHTML = '<span style="color:var(--forest);">✅ Tüm ödemeleriniz tamamlanmış</span>';
-          } else {
-            ozet.innerHTML = `<span style="color:var(--amber);">Kalan: ${fmt(kalan)} ₺</span>`;
+        if(toplam > 0) {
+          try {
+            const odemeDoc = await db.collection("odemeler").doc(currentUser.uid).get();
+            const odemeler = odemeDoc.exists ? (odemeDoc.data().odemeler || []) : [];
+            const odenen = odemeler.filter(o => o.tip !== "serbest").reduce((t,o) => t + (o.tutar||0), 0);
+            const kalan = toplam - odenen;
+            if(ozet) {
+              if(kalan <= 0) ozet.innerHTML = '<span style="color:var(--forest);">✅ Tüm ödemeleriniz tamamlanmış</span>';
+              else ozet.innerHTML = '<span style="color:var(--amber);">Kalan: ' + fmt(kalan) + ' ₺</span>';
+            }
+          } catch(e) {
+            if(ozet) ozet.innerHTML = '<span style="color:var(--text-light);">Ödeme planınızı görüntüleyin</span>';
           }
+        } else {
+          if(ozet) ozet.innerHTML = '<span style="color:var(--text-light);">Ödeme planınızı görüntüleyin</span>';
         }
-      } catch(e) {}
-      return;
+        return;
+      }
     }
-  } catch(e) {}
+  } catch(e) { console.warn("Ödeme kartı kontrol hatası:", e); }
   odemeCard.style.display = "none";
 }
 
@@ -2739,7 +2745,7 @@ async function goToOdemeBilgileri() {
   try {
     // Kayıt verisini çek
     const kayitDoc = await db.collection("kayitYenileme").doc(currentUser.uid).get();
-    if(!kayitDoc.exists || kayitDoc.data().durum !== "onaylandi") {
+    if(!kayitDoc.exists) {
       loading.style.display = "none";
       bos.style.display = "block";
       return;
