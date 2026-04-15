@@ -2467,28 +2467,48 @@ function scrollToInfo() {
           </div>
 
           <!-- Aylık Ücret Belirleme -->
-          <div id="om-ucret-ayar" style="background:linear-gradient(135deg, var(--amber) 0%, #D4940C 100%); border-radius:12px; padding:16px; margin:16px 0; color:white;">
-            <div style="font-size:13px; font-weight:700; margin-bottom:10px;">💰 Anlaşılan Aylık Ücret</div>
-            <div style="display:grid; grid-template-columns:1fr 1fr auto; gap:10px; align-items:end;">
-              <div>
-                <div style="font-size:11px; opacity:0.7; margin-bottom:4px;">Aylık Eğitim+Yemek Ücreti (TL)</div>
-                <input type="number" id="om-aylik-ucret" placeholder="Örn: 7400" style="width:100%; padding:10px 14px; border:2px solid rgba(255,255,255,0.3); border-radius:8px; font-size:16px; font-weight:700; font-family:'Outfit',sans-serif; background:rgba(255,255,255,0.15); color:white; box-sizing:border-box;" oninput="this.style.borderColor='rgba(255,255,255,0.6)'">
+          <div id="om-ucret-ayar" style="border-radius:12px; padding:16px; margin:16px 0; color:white;">
+            <div id="om-ucret-otomatik" style="display:none;">
+              <div style="font-size:13px; font-weight:700; margin-bottom:6px;">✅ Aylık Eğitim+Yemek Ücreti</div>
+              <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-top:8px;">
+                <div style="background:rgba(255,255,255,0.12); border-radius:8px; padding:10px; text-align:center;">
+                  <div style="font-size:10px; opacity:0.7;">Aylık</div>
+                  <div id="om-oto-aylik" style="font-size:18px; font-weight:700;"></div>
+                </div>
+                <div style="background:rgba(255,255,255,0.12); border-radius:8px; padding:10px; text-align:center;">
+                  <div style="font-size:10px; opacity:0.7;">Yıllık (10 ay)</div>
+                  <div id="om-oto-yillik" style="font-size:18px; font-weight:700;"></div>
+                </div>
+                <div style="background:rgba(255,255,255,0.12); border-radius:8px; padding:10px; text-align:center;">
+                  <div style="font-size:10px; opacity:0.7;">Kaynak</div>
+                  <div id="om-oto-kaynak" style="font-size:12px; font-weight:600; margin-top:2px;"></div>
+                </div>
               </div>
-              <div>
-                <div style="font-size:11px; opacity:0.7; margin-bottom:4px;">Yıllık Toplam (10 ay)</div>
-                <div id="om-yillik-onizleme" style="padding:10px 14px; background:rgba(255,255,255,0.1); border-radius:8px; font-size:16px; font-weight:700;">–</div>
+              <div style="margin-top:10px; display:flex; align-items:center; gap:8px;">
+                <button onclick="document.getElementById('om-ucret-manuel').style.display='block'; this.style.display='none';" style="padding:6px 14px; background:rgba(255,255,255,0.15); border:1px solid rgba(255,255,255,0.3); border-radius:6px; color:white; font-size:11px; cursor:pointer; font-family:'Outfit',sans-serif;">✏️ Düzelt</button>
+                <span style="font-size:11px; opacity:0.6;">Farklı bir ücret belirlenmişse düzeltebilirsiniz</span>
               </div>
-              <button onclick="kaydetAylikUcret()" style="padding:10px 20px; background:white; color:#B8860B; border:none; border-radius:8px; font-size:13px; font-weight:700; cursor:pointer; font-family:'Outfit',sans-serif; white-space:nowrap;">✓ Kaydet</button>
             </div>
-            <div id="om-ucret-mevcut" style="font-size:12px; opacity:0.7; margin-top:8px;"></div>
-          </div>
 
-          <script>
-          document.getElementById("om-aylik-ucret").addEventListener("input", function() {
-            const val = parseInt(this.value) || 0;
-            document.getElementById("om-yillik-onizleme").textContent = val > 0 ? fmt(val * 10) + " ₺" : "–";
-          });
-          </script>
+            <div id="om-ucret-bos" style="display:none;">
+              <div style="font-size:13px; font-weight:700; margin-bottom:6px;">⚠️ Aylık Ücret Belirlenmemiş</div>
+              <div style="font-size:12px; opacity:0.7; margin-bottom:10px;">Veli formu tamamlamamış veya ücret bilgisi eksik. Aşağıdan manuel girebilirsiniz.</div>
+            </div>
+
+            <div id="om-ucret-manuel" style="display:none; margin-top:10px;">
+              <div style="display:grid; grid-template-columns:1fr 1fr auto; gap:10px; align-items:end;">
+                <div>
+                  <div style="font-size:11px; opacity:0.7; margin-bottom:4px;">Aylık Eğitim+Yemek Ücreti (TL)</div>
+                  <input type="number" id="om-aylik-ucret" placeholder="Örn: 7400" style="width:100%; padding:10px 14px; border:2px solid rgba(255,255,255,0.3); border-radius:8px; font-size:16px; font-weight:700; font-family:'Outfit',sans-serif; background:rgba(255,255,255,0.15); color:white; box-sizing:border-box;" oninput="this.style.borderColor='rgba(255,255,255,0.6)'; document.getElementById('om-yillik-onizleme').textContent=(parseInt(this.value)||0)>0?fmt((parseInt(this.value)||0)*10)+' ₺':'–';">
+                </div>
+                <div>
+                  <div style="font-size:11px; opacity:0.7; margin-bottom:4px;">Yıllık Toplam (10 ay)</div>
+                  <div id="om-yillik-onizleme" style="padding:10px 14px; background:rgba(255,255,255,0.1); border-radius:8px; font-size:16px; font-weight:700;">–</div>
+                </div>
+                <button onclick="kaydetAylikUcret()" style="padding:10px 20px; background:white; color:#B8860B; border:none; border-radius:8px; font-size:13px; font-weight:700; cursor:pointer; font-family:'Outfit',sans-serif; white-space:nowrap;">✓ Kaydet</button>
+              </div>
+            </div>
+          </div>
 
           <!-- Bakiye Özeti -->
           <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin:20px 0;">
@@ -2780,14 +2800,36 @@ function openOdemeModal(id, kaynak) {
   el("om-odenen").textContent = fmt(s.toplamOdenen) + " ₺";
   el("om-kalan").textContent = fmt(s.kalanBakiye) + " ₺";
   
-  // Aylık ücret alanını doldur
+  // Aylık ücret: otomatik mi manuel mi?
   const d = s.data || {};
-  const mevcutAylik = d.adminAylikUcret || d.yeniAylikUcret || d.iDonemAylik || 0;
-  el("om-aylik-ucret").value = mevcutAylik > 0 ? mevcutAylik : "";
-  el("om-yillik-onizleme").textContent = mevcutAylik > 0 ? fmt(mevcutAylik * 10) + " ₺" : "–";
-  el("om-ucret-mevcut").textContent = mevcutAylik > 0 
-    ? "✅ Kayıtlı aylık ücret: " + fmt(mevcutAylik) + " TL" 
-    : "⚠️ Henüz aylık ücret belirlenmemiş — yukarıdan giriniz";
+  const adminUcret = d.adminAylikUcret || 0;
+  const formUcret = d.yeniAylikUcret || d.iDonemAylik || 0;
+  const mevcutAylik = adminUcret || formUcret;
+  const ucretAyar = el("om-ucret-ayar");
+  const ucretOto = el("om-ucret-otomatik");
+  const ucretBos = el("om-ucret-bos");
+  const ucretManuel = el("om-ucret-manuel");
+  
+  if(mevcutAylik > 0) {
+    // Ücret var — yeşil göster
+    ucretAyar.style.background = "linear-gradient(135deg, var(--forest) 0%, #2D5016 100%)";
+    ucretOto.style.display = "block";
+    ucretBos.style.display = "none";
+    ucretManuel.style.display = "none";
+    el("om-oto-aylik").textContent = fmt(mevcutAylik) + " ₺";
+    el("om-oto-yillik").textContent = fmt(mevcutAylik * 10) + " ₺";
+    el("om-oto-kaynak").textContent = adminUcret > 0 ? "Admin girişi" : "Veli formu";
+    el("om-aylik-ucret").value = mevcutAylik;
+    el("om-yillik-onizleme").textContent = fmt(mevcutAylik * 10) + " ₺";
+  } else {
+    // Ücret yok — amber uyarı göster, manuel input aç
+    ucretAyar.style.background = "linear-gradient(135deg, var(--amber) 0%, #D4940C 100%)";
+    ucretOto.style.display = "none";
+    ucretBos.style.display = "block";
+    ucretManuel.style.display = "block";
+    el("om-aylik-ucret").value = "";
+    el("om-yillik-onizleme").textContent = "–";
+  }
   
   // Bugünün tarihini set et
   el("om-yeni-tarih").value = new Date().toISOString().split("T")[0];
