@@ -392,7 +392,7 @@ input.price-input { font-size:22px; font-weight:600; font-family:'Playfair Displ
   border: 1px solid #C0DDB8;
   border-radius: 12px;
   padding: 16px 20px;
-  display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center;
+  display:flex; justify-content:space-between; align-items:center;
   margin-top:8px;
 }
 .price-preview-label { font-size:13px; color:var(--forest); }
@@ -585,10 +585,6 @@ input.price-input { font-size:22px; font-weight:600; font-family:'Playfair Displ
   animation: spin 0.8s linear infinite;
 }
 @keyframes spin { to { transform:rotate(360deg); } }
-@keyframes pulseGlow {
-  0%, 100% { box-shadow:0 4px 16px rgba(229,62,62,0.35); transform:scale(1); }
-  50% { box-shadow:0 6px 24px rgba(229,62,62,0.55); transform:scale(1.03); }
-}
 .loading-text { font-size:15px; color:var(--text-mid); font-weight:500; }
 
 /* Toast */
@@ -652,7 +648,7 @@ input.price-input { font-size:22px; font-weight:600; font-family:'Playfair Displ
     <div class="hero-content">
       <div class="hero-badge">✨ 2026-2027 Avantajlı Erken Kayıt Dönemi Açıldı</div>
       <h1 class="hero-title">Çocuğunuzun<br><em>büyüme yolculuğu</em><br>devam ediyor</h1>
-      <p class="hero-subtitle">Mevcut velilerimiz için özel kayıt yenileme sistemi. Google hesabınızla güvenli giriş yapın, ödeme planınızı görüntüleyin ve avantajlı erken kayıt imkanından faydalanmak için 10 Mayıs'tan önce kaydınızı tamamlayın.</p>
+      <p class="hero-subtitle">Mevcut velilerimiz için özel kayıt yenileme sistemi. Google hesabınızla güvenli giriş yapın, ödeme planınızı görüntüleyin ve avantajlı erken kayıt imkanından faydalanmak için 30 Nisan'dan önce kaydınızı lütfen tamamlayın.</p>
 
       <!-- Countdown -->
       <div class="countdown-box">
@@ -698,22 +694,9 @@ input.price-input { font-size:22px; font-weight:600; font-family:'Playfair Displ
         </div>
         <div class="feature-card">
           <div class="feature-icon">🎁</div>
-          <div class="feature-title">Bir Çiçek Referans Programı</div>
-          <div class="feature-desc">Sevdiklerinizi davet edin, birlikte kazanın!</div>
+          <div class="feature-title">Sürpriz Avantaj</div>
+          <div class="feature-desc">Referans programıyla özel indirimler kazanın</div>
         </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- REFERANS PROGRAMI TANITIM -->
-  <div style="background:linear-gradient(135deg, #F8F0E0 0%, #FDF8EE 50%, #EBF4E8 100%); padding:60px 24px;">
-    <div style="max-width:640px; margin:0 auto; text-align:center;">
-      <div style="display:inline-flex; align-items:center; gap:8px; background:linear-gradient(135deg, #E53E3E, #C53030); color:white; padding:10px 24px; border-radius:50px; font-size:13px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; margin-bottom:20px; box-shadow:0 4px 16px rgba(229,62,62,0.35); animation:pulseGlow 2s ease-in-out infinite;">🌸 Yeni Program</div>
-      <h2 style="font-family:'Playfair Display',serif; font-size:28px; font-weight:700; color:var(--forest); margin-bottom:8px;">Bir Çiçek Referans Programı</h2>
-      <p style="font-size:15px; color:var(--text-mid); line-height:1.7; margin-bottom:32px;">Bir Çiçek ailesi sevdiklerinizle büyüsün, beraber kazanın!<br>Kayıt yenileyip referans kodunuzu paylaştığınızda her yeni kayıt için özel bir avantaj elde etmiş olursunuz.</p>
-
-      <div style="margin-top:0; background:var(--forest-pale); border-radius:12px; padding:16px 20px; font-size:13px; color:var(--forest); line-height:1.6;">
-        <strong>Nasıl çalışır?</strong> Kayıt yenilediğinizde size özel BCK-XXXX referans kodunuz oluşur. Bu kodu okula ilk defa kayıt yaptıracak sevdiklerinizle paylaşın — her onaylanan kayıtta bir sonraki avantajı elde edersiniz! Referansla gelen ailemiz de avantaj elde eder. Detaylar ön kayıt esnasında...
       </div>
     </div>
   </div>
@@ -745,16 +728,6 @@ input.price-input { font-size:22px; font-weight:600; font-family:'Playfair Displ
           <div class="value-card-title">Geniş Sınıflar</div>
           <div class="value-card-text">Toddler (25-36 ay) ve Anaokulu (36-72 ay) programlarımızla kişiye özel hazırlanmış geniş sınıf ortamlarımızda her çocuğa yeterli ilgi ve kişiselleştirilmiş gelişim takibi.</div>
         </div>
-        <div class="value-card">
-          <div class="value-card-icon">🇹🇷</div>
-          <div class="value-card-title">Milli ve Manevi Değerler Eğitimi</div>
-          <div class="value-card-text">Çocuklarımız milli bayramları, manevi değerleri ve kültürel mirasımızı yaşayarak öğrenir. Sevgi, saygı, dürüstlük ve vicdan gibi temel değerler eğitim sürecinin doğal bir parçasıdır.</div>
-        </div>
-        <div class="value-card">
-          <div class="value-card-icon">🪵</div>
-          <div class="value-card-title">Ahşap Atölyesi</div>
-          <div class="value-card-text">Çocuklarımız ahşap atölyemizde gerçek aletlerle çalışarak el becerilerini geliştirir, problem çözme yetisini güçlendirir ve somut eserler üreterek özgüvenlerini inşa eder.</div>
-        </div>
       </div>
 
       <div class="testimonial-box">
@@ -766,7 +739,7 @@ input.price-input { font-size:22px; font-weight:600; font-family:'Playfair Displ
 
   <!-- CTA BOTTOM -->
   <div class="cta-bottom">
-    <h2>Yerinizi 10 Mayıs'a Kadar Garantileyin</h2>
+    <h2>Yerinizi 30 Nisan'a Kadar Garantileyin</h2>
     <p>Bu sayfa mevcut velilerimizin avantajlı kayıt fırsatından yararlanmaları için hazırlanmıştır.</p>
     <button class="btn-primary" onclick="signInWithGoogle()">
       🌸 Kayıt Yenileme Sistemine Gir
@@ -795,39 +768,11 @@ input.price-input { font-size:22px; font-weight:600; font-family:'Playfair Displ
 
   <div class="portal-body">
     <div class="welcome-card">
-      <div class="welcome-name">Hoş Geldiniz! 🌸</div>
+      <div class="welcome-name">Hoş geldiniz! 🌸</div>
       <div class="welcome-sub" id="welcomeEmail">–</div>
-      <div class="deadline-pill">⏰ Avantajlı Erken Kayıt: 10 Mayıs 2026'ya kadar</div>
-      
-      <div style="margin-top:16px; background:rgba(255,255,255,0.08); border-radius:14px; padding:18px 20px; font-size:14px; color:rgba(255,255,255,0.92); line-height:1.75;">
-        <div style="font-family:'Playfair Display',serif; font-size:17px; font-weight:700; color:white; margin-bottom:6px;">2026–2027 Eğitim Öğretim Yılı Kayıt Yenileme Duyurusu</div>
-        <div style="font-style:italic; color:rgba(255,255,255,0.7); margin-bottom:14px; font-size:13px;">Bir Çiçek'te büyüyen her çocuk, geleceğe sevgiyle hazırlanır…</div>
-        
-        <div>Sevgili Ebeveynlerimiz,</div>
-        <div style="margin-top:10px;">Bir çocuğun hayatında okul; yalnızca zaman geçirdiği bir yer değil, karakterinin şekillendiği, güven duygusunun beslendiği, merakının büyüdüğü ve hayata bakışının temellerinin atıldığı çok kıymetli bir yaşam alanıdır.</div>
-        
-        <div id="duyuruDevam" style="display:none; margin-top:10px;">
-          <div>Bizler, çocuklarımızın yalnızca bugünkü ihtiyaçlarını değil; yarının güçlü, vicdanlı, özgüvenli ve mutlu bireyleri olmaları için ihtiyaç duyacakları tüm gelişim alanlarını önemseyen bir anlayışla yol alıyoruz.</div>
-          <div style="margin-top:10px;">Her eğitim yılında olduğu gibi, bu yıl da en büyük gayemiz; çocuklarımızın kendilerini değerli hissettikleri, sevgiyle büyüdükleri, doğayla bağ kurdukları, özgürce keşfettikleri ve iyi insan olmayı içselleştirdikleri bir eğitim ortamını sürdürebilmektir.</div>
-          <div style="margin-top:10px;">Bugün geldiğimiz noktada şunu gönül rahatlığıyla söyleyebilirim ki; Bir Çiçek ailesi olarak yalnızca bir okul değil, çocukların en kıymetli gelişim yıllarına birlikte şahitlik eden güçlü bir eğitim kurumu olduk.</div>
-          <div style="margin-top:10px;">İşte tam da bu nedenle, çocuklarımızın bu güvenli ve nitelikli eğitim yolculuğuna aynı istikrarla devam edebilmesi adına, <strong style="color:white;">2026–2027 eğitim öğretim yılı kayıt yenileme sürecimizi başlatmış bulunuyoruz.</strong></div>
-          
-          <div style="margin-top:18px; background:rgba(255,255,255,0.1); border-radius:10px; padding:14px 16px;">
-            <div style="font-weight:700; color:white; margin-bottom:8px;">🎯 Erken Kayıt Avantajı — 10 Mayıs 2026'ya kadar!</div>
-            <div style="margin-top:8px;">Eğitim kalitesinden ödün vermeden, ailelerimizin ekonomik planlamasını da hassasiyetle gözeten bir yaklaşım benimsemeye devam ediyoruz.</div>
-            <div style="margin-top:10px;">📋 Bildiğiniz üzere Milli Eğitim Bakanlığı'nın 2026–2027 eğitim ve öğretim dönemi için belirlediği artış oranı <strong style="color:white;">%43,92</strong>'dir. Ancak biz, mevcut ailelerimize destek olabilmek adına, bu oranı <strong style="color:white;">%28 artış</strong> ile sınırlandırma kararı aldık.</div>
-            <div style="margin-top:10px;">Bununla birlikte ödeme planlamamızı da ailelerimizin yaşam gerçekliğini dikkate alarak yapılandırdık:</div>
-            <div style="margin-top:8px; padding-left:12px; border-left:3px solid rgba(255,255,255,0.3);">
-              <div style="margin-bottom:4px;">• I. dönem ödemeleri daha düşük seviyede planlanmıştır</div>
-              <div>• II. dönem ödemeleri ise Ocak ayındaki maaş artış dönemleriyle daha uyumlu olacak şekilde düzenlenmiştir</div>
-            </div>
-            <div style="margin-top:10px; font-style:italic; color:rgba(255,255,255,0.8);">Çünkü biz inanıyoruz ki; sağlıklı bir eğitim süreci, yalnızca çocukların değil, ailelerin de kendini güvende hissettiği bir yapı ile mümkün olur.</div>
-          </div>
-        </div>
-
-        <button onclick="toggleDuyuru()" id="btnDuyuruToggle" style="margin-top:14px; background:rgba(255,255,255,0.15); border:1px solid rgba(255,255,255,0.3); color:white; border-radius:50px; padding:10px 24px; font-size:13px; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:8px; transition:all 0.3s;">
-          📖 Yazının Devamını Oku <span id="duyuruArrow" style="transition:transform 0.3s;">▼</span>
-        </button>
+      <div class="deadline-pill">⏰ Avantajlı Erken Kayıt: 30 Nisan 2026'ya kadar</div>
+      <div style="margin-top:16px; background:rgba(255,255,255,0.1); border-radius:12px; padding:14px 18px; font-size:13px; color:rgba(255,255,255,0.88); line-height:1.65;">
+        📋 Milli Eğitim Bakanlığı'nın 2026-2027 dönemi için belirlediği artış oranı <strong>%43,92</strong>'dir. Bir Çiçek Koleji olarak ailelerimizin bütçelerini desteklemek adına artış oranımızı <strong>%28</strong> olarak uyguluyor; ayrıca I. dönem ödemelerinizi daha düşük, II. dönem ödemelerinizi ise Ocak maaş artışlarınızla örtüşecek şekilde yapılandırıyoruz.
       </div>
     </div>
 
@@ -922,20 +867,11 @@ input.price-input { font-size:22px; font-weight:600; font-family:'Playfair Displ
       </div>
       <div class="field">
         <label>Mevcut Aylık Ücretiniz (TL)</label>
-        <input type="number" class="price-input" id="mevcutUcret" placeholder="Aylık ücretinizi giriniz" oninput="updatePreview()">
+        <input type="number" class="price-input" id="mevcutUcret" placeholder="28000" oninput="updatePreview()">
         <div class="price-hint">Bu yıl ödediğiniz aylık eğitim + yemek toplamı</div>
-        <div id="ucretUyari" style="display:none; margin-top:6px; padding:10px 14px; background:#FEF2F2; border:1px solid #FECACA; border-radius:8px; font-size:12px; color:#DC2626; line-height:1.5;"></div>
-        
         <div class="price-preview" id="pricePreview" style="display:none;">
           <span class="price-preview-label">2026-2027 Yeni Aylık Ücret (%28 artış)</span>
           <span class="price-preview-val" id="previewVal">–</span>
-          <div id="previewDonem" style="margin-top:8px; padding-top:8px; border-top:1px solid rgba(42,94,34,0.15); font-size:12px; color:var(--forest);">
-            <div style="font-weight:600; margin-bottom:4px; color:var(--forest); opacity:0.8;">Ön kayıt sonrasında;</div>
-            <div style="display:flex; justify-content:space-between; gap:12px;">
-              <span id="previewDonem1">I. Dönem (5 Ay): –</span>
-              <span id="previewDonem2">II. Dönem (5 Ay): –</span>
-            </div>
-          </div>
         </div>
       </div>
     </div>
@@ -1036,53 +972,31 @@ input.price-input { font-size:22px; font-weight:600; font-family:'Playfair Displ
         <div class="diger-card-header">📦 Diğer Ödemeler</div>
         <div class="diger-row">
           <div class="diger-info">
-            <div class="diger-name">📚 Eğitim Materyalleri</div>
+            <div class="diger-name">Eğitim Materyalleri</div>
             <div class="diger-date">5 Temmuz 2026</div>
           </div>
-          <div class="diger-tutar" style="font-size:14px; color:var(--forest); font-weight:700;">36.000 TL</div>
+          <div class="diger-tutar">35.000 TL</div>
         </div>
         <div class="diger-row">
           <div class="diger-info">
-            <div class="diger-name">👔 Bir Çiçek Koleji Okul Kıyafeti</div>
-            <div class="diger-date">5 Ağustos 2026</div>
-            <div style="font-size:11px; color:var(--text-light); line-height:1.7; margin-top:8px;">
-              • Eşofman Takımı Uzun Kol Kapişonlu (2 alt+1 üst)<br>
-              • Pamuk Dokuma Sweet Uzun Kollu (1 adet)<br>
-              • Lakos Polo Yaka T-Shirt (1 adet)<br>
-              • Penye T-Shirt Kısa Kollu (1 adet)<br>
-              • Şort + T-Shirt Takımı (1 adet)<br>
-              • Su Geçirmez Yağmurluk (1 adet)<br>
-              • Orman Okulu Kirli Çantası (1 adet)
-            </div>
-            <div style="margin-top:8px; background:#FEF9E6; border:1px solid rgba(184,150,46,0.3); border-radius:8px; padding:6px 10px; font-size:11px; color:#B8962E; font-weight:600;">
-              ⭐ Avantajlı Ön Kayıt'a özel Bir Çiçek Desteği ile %35 indirim — 9.555 TL
-            </div>
-          </div>
-          <div class="diger-tutar" style="font-size:14px; color:var(--forest); font-weight:700; text-align:right; line-height:1.8;">
-            <s style="color:var(--text-light); font-weight:400;">14.700 TL</s><br>
-            <span style="color:#B8962E; font-weight:800;">9.555 TL</span>
-          </div>
-        </div>
-        <div class="diger-row">
-          <div class="diger-info">
-            <div class="diger-name">🌲 Orman Okulu Kıyafeti</div>
+            <div class="diger-name">Orman Okulu I. Dönem Servis</div>
             <div class="diger-date">5 Eylül 2026</div>
           </div>
-          <div id="kiyafetDisplay" class="diger-tutar" style="font-size:13px; color:var(--text-light); font-family:'DM Sans',sans-serif; font-weight:500;">Eylül başında ilan edilecek</div>
+          <div class="diger-tutar" id="servis1Display">9.000 TL</div>
         </div>
         <div class="diger-row">
           <div class="diger-info">
-            <div class="diger-name">🚌 Orman Okulu I. Dönem Servis</div>
-            <div class="diger-date">5 Ekim 2026</div>
+            <div class="diger-name">Orman Okulu Kıyafeti</div>
+            <div class="diger-date">5 Eylül 2026</div>
           </div>
-          <div class="diger-tutar" id="servis1Display" style="font-size:13px; color:var(--text-light); font-family:'DM Sans',sans-serif; font-weight:500;">Ekim başında ilan edilecek</div>
+          <div id="kiyafetDisplay" class="diger-tutar">5.500 TL</div>
         </div>
         <div class="diger-row">
           <div class="diger-info">
-            <div class="diger-name">🚌 Orman Okulu II. Dönem Servis</div>
+            <div class="diger-name">Orman Okulu II. Dönem Servis</div>
             <div class="diger-date">5 Şubat 2027</div>
           </div>
-          <div class="diger-tutar" id="servis2Display" style="font-size:13px; color:var(--text-light); font-family:'DM Sans',sans-serif; font-weight:500;">Şubat başında ilan edilecek</div>
+          <div class="diger-tutar" id="servis2Display">10.000 TL</div>
         </div>
       </div>
       <div style="background:var(--forest-pale); border:1px solid #C0DDB8; border-radius:12px; padding:16px 20px; font-size:13px; color:var(--forest); line-height:1.6;">
@@ -1093,8 +1007,8 @@ input.price-input { font-size:22px; font-weight:600; font-family:'Playfair Displ
     <!-- Referans kartı -->
     <div class="referans-card mt-24" id="referansKartiHesap">
       <div class="referans-badge-title">🎁 KAZANDIĞINIZ AVANTAJ</div>
-      <div class="referans-title">Bir Çiçek Referans Programına Hoş Geldiniz!</div>
-      <div class="referans-desc">Referans kodunuzu sevdiklerinizle paylaşın. Her kayıt olan aile için sürpriz bir indirim kazanın — toplamda 3 kayıt tamamlayın, büyük avantaj elde edin. Bu fırsat kaydını yenileyen ve referansla kayıt getiren ilk 10 Ebeveynimiz için geçerlidir. Detaylar aşağıda.</div>
+      <div class="referans-title">Referans Programına Hoş Geldiniz!</div>
+      <div class="referans-desc">Referans kodunuzu arkadaşlarınızla paylaşın. Her kayıt olan aile için sürpriz bir indirim kazanın — toplamda 3 kayıt tamamlayın, büyük ödüle ulaşın.</div>
       <div class="kod-box">
         <div class="kod-text" id="referansKodDisplay">BCK-????</div>
         <button class="btn-copy" onclick="copyKod()">Kopyala</button>
@@ -1105,15 +1019,15 @@ input.price-input { font-size:22px; font-weight:600; font-family:'Playfair Displ
       <div class="referans-steps mt-16">
         <div class="referans-step">
           <div class="step-num">1</div>
-          <div class="step-text"><strong>1. Kayıt:</strong> I. Dönem Orman Okulu Servis ücreti — <strong>alınmaz!</strong></div>
+          <div class="step-text"><strong>1. Kayıt:</strong> I. Dönem Orman Okulu Servis ücreti (9.000 TL) — <strong>alınmaz!</strong></div>
         </div>
         <div class="referans-step">
           <div class="step-num">2</div>
-          <div class="step-text"><strong>2. Kayıt:</strong> II. Dönem Orman Okulu Servis ücreti — <strong>alınmaz!</strong></div>
+          <div class="step-text"><strong>2. Kayıt:</strong> II. Dönem Orman Okulu Servis ücreti (10.000 TL) — <strong>alınmaz!</strong></div>
         </div>
         <div class="referans-step">
           <div class="step-num">3</div>
-          <div class="step-text"><strong>3. Kayıt:</strong> Eğitim Materyalleri ücretinin %50'si — <strong>düşülür!</strong></div>
+          <div class="step-text"><strong>3. Kayıt:</strong> Eğitim Materyalleri ücreti (35.000 TL) — <strong>alınmaz!</strong></div>
         </div>
       </div>
     </div>
@@ -1140,7 +1054,7 @@ input.price-input { font-size:22px; font-weight:600; font-family:'Playfair Displ
         </div>
         <div>
           <div style="font-size:15px; font-weight:700; color:white; margin-bottom:4px;">💳 Kredi Kartı ile Ödeme</div>
-          <div style="font-size:13px; color:rgba(255,255,255,0.7); line-height:1.6;">Peşin ödemelerde kullanılır. Peşin ödemede <strong style="color:rgba(255,255,255,0.9);">%10 indirim</strong> uygulanır. <em style="opacity:0.8;">(Banka %4-%5 oranında komisyon uygular.)</em></div>
+          <div style="font-size:13px; color:rgba(255,255,255,0.7); line-height:1.6;">Sanal Pos — Banka komisyon uygular, ancak <strong style="color:rgba(255,255,255,0.9);">ücretsiz 3-5-8 taksit</strong> imkânı sunabilir. <em style="opacity:0.8;">(Öncesinde bankanız ile görüşerek teyit alınız.)</em></div>
         </div>
       </div>
 
@@ -1150,7 +1064,7 @@ input.price-input { font-size:22px; font-weight:600; font-family:'Playfair Displ
         </div>
         <div>
           <div style="font-size:15px; font-weight:700; color:white; margin-bottom:4px;">⭐ Vakıfbank VİNOV</div>
-          <div style="font-size:13px; color:rgba(255,255,255,0.7); line-height:1.6;">Toplam ödemenizden <strong style="color:#F0D490;">5.000 TL daha az ödeme</strong> yaparsınız. Vakıfbank Uygulamasından ücretsiz hesap açarsınız. Sözleşme esnasında okulumuzdan banka sistemine giriş yapılır; kısa sürede onay netleşir. Size özel limit tanımlanır ve aylık ödemeler otomatik olarak banka üzerinden aktarılır.</div>
+          <div style="font-size:13px; color:rgba(255,255,255,0.7); line-height:1.6;">Toplam ödemenizden <strong style="color:#F0D490;">10.000 TL daha az ödeme</strong> yaparsınız. Vakıfbank Uygulamasından ücretsiz hesap açarsınız. Sözleşme esnasında okulumuzdan banka sistemine giriş yapılır; kısa sürede onay netleşir. Size özel limit tanımlanır ve aylık ödemeler otomatik olarak banka üzerinden aktarılır.</div>
         </div>
       </div>
     </div>
@@ -1200,41 +1114,7 @@ input.price-input { font-size:22px; font-weight:600; font-family:'Playfair Displ
       <div class="done-item"><span>🔑</span><span>Ön ödemenizi yaparak kaydınızı tamamlayabilirsiniz</span></div>
       <div class="done-item"><span>🎁</span><span>Referans kodunuzu paylaşmayı unutmayın!</span></div>
     </div>
-
-    <!-- Referans Programı Detayları -->
-    <div style="margin-top:28px; background:linear-gradient(135deg, #FDF8EE 0%, #EBF4E8 100%); border:1px solid var(--border); border-radius:var(--radius); padding:24px; text-align:left;">
-      <div style="font-family:'Playfair Display',serif; font-size:18px; font-weight:700; color:var(--forest); margin-bottom:6px; text-align:center;">🌸 Bir Çiçek Referans Programı</div>
-      <div style="font-size:13px; color:var(--text-mid); text-align:center; margin-bottom:20px;">Referans kodunuzu paylaşın, her kayıtta yeni avantajlar kazanın!</div>
-      
-      <div style="display:flex; flex-direction:column; gap:12px;">
-        <div style="display:flex; gap:14px; align-items:center; background:white; border-radius:12px; padding:14px 16px; border:1px solid var(--border);">
-          <div style="width:40px; height:40px; border-radius:50%; background:linear-gradient(135deg, #D4940C, var(--amber-light)); display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0;">1️⃣</div>
-          <div>
-            <div style="font-weight:700; color:var(--forest); font-size:14px;">I. Dönem Orman Okulu Servisi</div>
-            <div style="font-size:12px; color:var(--text-light); margin-top:2px;">İlk referans kaydı onaylandığında servis ücreti alınmaz</div>
-          </div>
-        </div>
-        <div style="display:flex; gap:14px; align-items:center; background:white; border-radius:12px; padding:14px 16px; border:1px solid var(--border);">
-          <div style="width:40px; height:40px; border-radius:50%; background:linear-gradient(135deg, #D4940C, var(--amber-light)); display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0;">2️⃣</div>
-          <div>
-            <div style="font-weight:700; color:var(--forest); font-size:14px;">II. Dönem Orman Okulu Servisi</div>
-            <div style="font-size:12px; color:var(--text-light); margin-top:2px;">İkinci referans kaydı onaylandığında bu da ücretsiz</div>
-          </div>
-        </div>
-        <div style="display:flex; gap:14px; align-items:center; background:white; border-radius:12px; padding:14px 16px; border:2px solid var(--amber); box-shadow:0 3px 12px rgba(196,136,10,0.12);">
-          <div style="width:40px; height:40px; border-radius:50%; background:linear-gradient(135deg, var(--forest), var(--forest-mid)); display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0;">🎉</div>
-          <div>
-            <div style="font-weight:700; color:var(--forest); font-size:14px;">Eğitim Materyalleri %50 İndirim!</div>
-            <div style="font-size:12px; color:var(--text-light); margin-top:2px;">Üçüncü kayıtta 36.000 TL'lik materyal ücretinin yarısı düşülür</div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div style="display:flex; flex-direction:column; gap:12px; align-items:center; margin-top:28px;">
-      <button id="btnDownloadPDF" class="btn-primary" style="display:inline-flex; background:var(--amber); gap:8px;" onclick="downloadPDF()">📄 Ödeme Planı PDF İndir</button>
-      <button class="btn-primary" style="display:inline-flex; background:var(--forest);" onclick="goToScreen('screen-portal')">Portale Dön</button>
-    </div>
+    <button class="btn-primary" style="margin:28px auto 0; display:inline-flex;" onclick="goToScreen('screen-portal')">Portale Dön</button>
   </div>
 </div>
 
@@ -1254,7 +1134,7 @@ input.price-input { font-size:22px; font-weight:600; font-family:'Playfair Displ
 </div>
 
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+<script>
 // ═══════════════════════════════════════════════════════
 // 🔧 YAPILANDIRMA
 // ═══════════════════════════════════════════════════════
@@ -1275,7 +1155,7 @@ const EMAILJS_CONFIG = {
 };
 
 const SCHOOL_EMAIL = "eposta@bircicekkoleji.com";
-const ERKEN_KAYIT_SON_GUN = new Date("2026-05-10T23:59:59");
+const ERKEN_KAYIT_SON_GUN = new Date("2026-04-30T23:59:59");
 
 // ═══════════════════════════════════════════════════════
 // FIREBASE BAŞLATMA
@@ -1342,7 +1222,7 @@ auth.onAuthStateChanged(user => {
   if (user) { currentUser = user; onLogin(user); }
 });
 
-async function onLogin(user) {
+function onLogin(user) {
   currentUser = user;
   // Giriş takibi — okul mailine bilgi
   logGiris(user);
@@ -1363,16 +1243,6 @@ async function onLogin(user) {
   // Admin kartını göster/gizle
   const adminCard = document.getElementById("adminCard");
   if(adminCard) adminCard.style.display = user.email === ADMIN_EMAIL ? "flex" : "none";
-
-  // Mevcut kayıt var mı kontrol et — varsa hesap bilgileri göster
-  try {
-    const snap = await db.collection("kayitYenileme").doc(user.uid).get();
-    if (snap.exists) {
-      goToScreen("screen-hesap-bilgileri");
-      return;
-    }
-  } catch(e) { console.log("Kayıt kontrol hatası:", e); }
-
   goToScreen("screen-portal");
 }
 
@@ -1417,50 +1287,28 @@ function updatePreview() {
   const val = parseInt(document.getElementById("mevcutUcret")?.value) || 0;
   const preview = document.getElementById("pricePreview");
   const previewVal = document.getElementById("previewVal");
-  const uyari = document.getElementById("ucretUyari");
-
-  // Validasyon
-  let valid = true;
-  if (uyari) uyari.style.display = "none";
-
-  if (val && val > 0) {
-    if (appState.program === "tamgun" && val < 28000) {
-      if (uyari) {
-        uyari.textContent = "⚠️ Tam gün programı için en düşük ücret 28.000 TL'dir. Lütfen mevcut tam gün ücretinizi giriniz.";
-        uyari.style.display = "block";
-      }
-      valid = false;
-    } else if (appState.program === "yarimgun" && (val < 26000 || val > 27000)) {
-      if (uyari) {
-        uyari.textContent = "⚠️ Yarım gün programı için ücret 26.000 TL – 27.000 TL aralığında olmalıdır.";
-        uyari.style.display = "block";
-      }
-      valid = false;
-    }
+  if (!val || val < 1000) { if(preview) preview.style.display = "none"; return; }
+  let yeni;
+  if (appState.program === "yarimgun") {
+    yeni = Math.round(val * 0.8 * 1.28);
+  } else {
+    yeni = Math.round(val * 1.28);
   }
-
-  if (!val || val < 1000 || !valid) { if(preview) preview.style.display = "none"; return; }
-
-  // Program fark etmeksizin: veli ne ödüyorsa onun %28 artışı
-  let yeni = Math.round(val * 1.28);
   if(preview) preview.style.display = "flex";
   if(previewVal) previewVal.textContent = fmt(yeni) + " TL";
-  // Dönemsel önizleme
-  const kalan = yeni * 9;
-  const iDonem = Math.round((kalan * 0.488) / 5 / 100) * 100;
-  const iiDonem = Math.round((kalan - iDonem * 5) / 5);
-  const d1 = document.getElementById("previewDonem1");
-  const d2 = document.getElementById("previewDonem2");
-  if(d1) d1.textContent = "I. Dönem (5 Ay): " + fmt(iDonem) + " TL/ay";
-  if(d2) d2.textContent = "II. Dönem (5 Ay): " + fmt(iiDonem) + " TL/ay";
 }
 
 // ═══════════════════════════════════════════════════════
 // ÖDEME HESAPLAMA
 // ═══════════════════════════════════════════════════════
 function hesapla(mevcutAylik, program) {
-  // Program fark etmeksizin: veli mevcut ücretine %28 artış uygulanır
-  let yeniAylik = Math.round(mevcutAylik * 1.28);
+  // Yarım gün: önce yarım gün tabanını bul (mevcut*0.8), sonra %28 artır
+  let yeniAylik;
+  if (program === "yarimgun") {
+    yeniAylik = Math.round(mevcutAylik * 0.8 * 1.28);
+  } else {
+    yeniAylik = Math.round(mevcutAylik * 1.28);
+  }
 
   const egitim = Math.round(yeniAylik * 0.60);
   const yemek  = yeniAylik - egitim;
@@ -1492,15 +1340,6 @@ function goToHesaplama() {
   const phone   = document.getElementById("parentPhone")?.value?.trim();
 
   if (!mevcut || mevcut < 1000) return showToast("⚠️ Geçerli bir aylık ücret giriniz");
-
-  // Program bazlı validasyon
-  if (appState.program === "tamgun" && mevcut < 28000) {
-    return showToast("⚠️ Tam gün programı için en düşük ücret 28.000 TL'dir");
-  }
-  if (appState.program === "yarimgun" && (mevcut < 26000 || mevcut > 27000)) {
-    return showToast("⚠️ Yarım gün programı için ücret 26.000 – 27.000 TL aralığında olmalıdır");
-  }
-
   if (!childFN || !childLN)    return showToast("⚠️ Çocuğun adını ve soyadını giriniz");
   if (!sinif)                  return showToast("⚠️ Sınıf seçiniz");
   if (!phone)                  return showToast("⚠️ Telefon numarası giriniz");
@@ -1549,13 +1388,14 @@ function renderHesaplama() {
   renderRows("iDonemRows",  h.iDonemOdemeler,  "tutar-green");
   renderRows("iiDonemRows", h.iiDonemOdemeler, "tutar-green");
 
-  // Kıyafet: referanslı geliyorsa ücretsiz notu
+  // Kıyafet: referanslı geliyorsa ücretsiz
   const kiyafetEl = el("kiyafetDisplay");
   if(kiyafetEl) {
     if(appState.referansliGeliyor) {
       kiyafetEl.innerHTML = '<span class="free-badge">✓ ÜCRETSİZ</span>';
     } else {
-      kiyafetEl.textContent = "Eylül ayında ilan edilecektir";
+      kiyafetEl.textContent = "5.500 TL";
+      kiyafetEl.className = "diger-tutar";
     }
   }
 
@@ -1599,17 +1439,8 @@ async function kaydet() {
       await handleReferansKayit(refGiris);
     }
 
-    // 3) PDF oluştur
-    const pdfDoc = generatePDF(data);
-    const pdfBase64 = pdfDoc.output("datauristring").split(",")[1];
-    appState.lastPDF = pdfDoc;
-
-    // 4) Email gönder (PDF base64 ile)
-    await sendEmail(data, pdfBase64);
-
-    // 5) İndir butonunu aktifle
-    const dlBtn = document.getElementById("btnDownloadPDF");
-    if(dlBtn) dlBtn.style.display = "inline-flex";
+    // 3) PDF oluştur ve email gönder
+    await sendEmail(data);
 
     hideLoading();
     goToScreen("screen-tamamlandi");
@@ -1618,179 +1449,6 @@ async function kaydet() {
     console.error(e);
     showToast("⚠️ Hata oluştu: " + e.message);
     if(btn) { btn.disabled = false; btn.textContent = "🌸 Kaydı Tamamla ve Gönder"; }
-  }
-}
-
-// ═══════════════════════════════════════════════════════
-// PDF OLUŞTURMA
-// ═══════════════════════════════════════════════════════
-function generatePDF(data) {
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF("p", "mm", "a4");
-  const h = appState.hesaplama;
-  const pw = 210;
-  let y = 20;
-
-  // Başlık
-  doc.setFillColor(42, 94, 34);
-  doc.rect(0, 0, pw, 40, "F");
-  doc.setTextColor(255, 255, 255);
-  doc.setFontSize(18);
-  doc.text("Bir Cicek Koleji Anaokulu", pw / 2, 16, { align: "center" });
-  doc.setFontSize(11);
-  doc.text("2026-2027 Egitim Yili - Kayit Yenileme Odeme Plani", pw / 2, 26, { align: "center" });
-  doc.setFontSize(9);
-  doc.text("Montessori & Orman Okulu | Tuzla Aydinli, Istanbul", pw / 2, 34, { align: "center" });
-  y = 50;
-
-  // Veli / Çocuk bilgileri
-  doc.setTextColor(42, 94, 34);
-  doc.setFontSize(12);
-  doc.text("Veli ve Cocuk Bilgileri", 15, y);
-  y += 8;
-  doc.setTextColor(30, 30, 30);
-  doc.setFontSize(10);
-  const info = [
-    ["Veli:", (data.parentFirstName + " " + data.parentLastName).trim()],
-    ["E-posta:", data.email],
-    ["Telefon:", data.phone],
-    ["Cocuk:", (data.childFirstName + " " + data.childLastName).trim()],
-    ["Sinif:", data.childClass],
-    ["Program:", data.program === "tamgun" ? "Tam Gun" : "Yarim Gun"],
-    ["Kayit Tarihi:", new Date(data.kayitTarihi).toLocaleDateString("tr-TR")]
-  ];
-  info.forEach(([label, val]) => {
-    doc.setFont(undefined, "bold");
-    doc.text(label, 15, y);
-    doc.setFont(undefined, "normal");
-    doc.text(val || "-", 55, y);
-    y += 6;
-  });
-  y += 6;
-
-  // Ücret özeti
-  doc.setFillColor(235, 244, 232);
-  doc.roundedRect(15, y - 4, pw - 30, 30, 3, 3, "F");
-  doc.setTextColor(42, 94, 34);
-  doc.setFontSize(11);
-  doc.setFont(undefined, "bold");
-  doc.text("Ucret Ozeti", 20, y + 4);
-  doc.setFontSize(10);
-  doc.setFont(undefined, "normal");
-  doc.text("Mevcut Aylik: " + fmt(data.mevcutAylikUcret) + " TL", 20, y + 12);
-  doc.text("Yeni Aylik (%28 Artis): " + fmt(data.yeniAylikUcret) + " TL", 20, y + 19);
-  doc.text("On Odeme (Kayit Gunu): " + fmt(data.onOdeme) + " TL", 110, y + 12);
-  doc.text("Odeme Tercihi: " + (data.odemeTercihi || "-"), 110, y + 19);
-  y += 36;
-
-  // Ödeme takvimi
-  doc.setTextColor(42, 94, 34);
-  doc.setFontSize(12);
-  doc.setFont(undefined, "bold");
-  doc.text("Odeme Takvimi", 15, y);
-  y += 8;
-
-  // Tablo başlık
-  doc.setFillColor(42, 94, 34);
-  doc.rect(15, y - 4, pw - 30, 8, "F");
-  doc.setTextColor(255, 255, 255);
-  doc.setFontSize(9);
-  doc.text("Donem", 20, y + 1);
-  doc.text("Odeme Tarihi", 80, y + 1);
-  doc.text("Tutar", 155, y + 1);
-  y += 8;
-
-  doc.setTextColor(30, 30, 30);
-  doc.setFont(undefined, "normal");
-
-  // Ön ödeme
-  doc.setFillColor(252, 248, 238);
-  doc.rect(15, y - 4, pw - 30, 7, "F");
-  doc.text("On Odeme", 20, y + 1);
-  doc.text("Kayit Gunu", 80, y + 1);
-  doc.setFont(undefined, "bold");
-  doc.text(fmt(data.onOdeme) + " TL", 155, y + 1);
-  doc.setFont(undefined, "normal");
-  y += 8;
-
-  // I. Dönem
-  const iOd = h.iDonemOdemeler || [];
-  iOd.forEach((o, i) => {
-    if (i % 2 === 0) { doc.setFillColor(245, 250, 243); doc.rect(15, y - 4, pw - 30, 7, "F"); }
-    doc.text("I. Donem", 20, y + 1);
-    doc.text(o.tarih, 80, y + 1);
-    doc.text(fmt(o.tutar) + " TL", 155, y + 1);
-    y += 7;
-  });
-
-  // II. Dönem
-  const iiOd = h.iiDonemOdemeler || [];
-  iiOd.forEach((o, i) => {
-    if (i % 2 === 0) { doc.setFillColor(252, 248, 238); doc.rect(15, y - 4, pw - 30, 7, "F"); }
-    doc.text("II. Donem", 20, y + 1);
-    doc.text(o.tarih, 80, y + 1);
-    doc.text(fmt(o.tutar) + " TL", 155, y + 1);
-    y += 7;
-  });
-
-  // Diger ödemeler
-  y += 6;
-  doc.setTextColor(42, 94, 34);
-  doc.setFontSize(12);
-  doc.setFont(undefined, "bold");
-  doc.text("Diger Odemeler", 15, y);
-  y += 8;
-  doc.setTextColor(30, 30, 30);
-  doc.setFontSize(10);
-  doc.setFont(undefined, "normal");
-  const digerList = [
-    ["5 Temmuz 2026", "Egitim Materyalleri", "36.000 TL"],
-    ["5 Agustos 2026", "Bir Cicek Koleji Okul Kiyafeti", "14.700 TL (On Kayit: 9.555 TL)"],
-    ["5 Eylul 2026", "Orman Okulu Kiyafeti", "Eylul basinda ilan edilecek"],
-    ["5 Ekim 2026", "Orman Okulu I. Donem Servis", "Ekim basinda ilan edilecek"],
-    ["5 Subat 2027", "Orman Okulu II. Donem Servis", "Subat basinda ilan edilecek"]
-  ];
-  digerList.forEach(([tarih, ad, tutar]) => {
-    doc.text(tarih, 20, y);
-    doc.text(ad, 60, y);
-    doc.setFont(undefined, "italic");
-    doc.text(tutar, 130, y);
-    doc.setFont(undefined, "normal");
-    y += 6;
-  });
-
-  // Referans kodu
-  y += 6;
-  doc.setFillColor(196, 136, 10);
-  doc.roundedRect(15, y - 4, pw - 30, 18, 3, 3, "F");
-  doc.setTextColor(255, 255, 255);
-  doc.setFontSize(10);
-  doc.text("Referans Kodunuz:", 20, y + 4);
-  doc.setFontSize(14);
-  doc.setFont(undefined, "bold");
-  doc.text(data.referansKodu || "BCK-????", 75, y + 4);
-  doc.setFontSize(9);
-  doc.setFont(undefined, "normal");
-  doc.text("Bu kodu sevdiklerinizle paylasin, avantajlar kazanin!", 20, y + 12);
-
-  // Footer
-  y = 282;
-  doc.setDrawColor(200, 200, 200);
-  doc.line(15, y - 4, pw - 15, y - 4);
-  doc.setTextColor(120, 120, 120);
-  doc.setFontSize(8);
-  doc.text("Bir Cicek Koleji Anaokulu | Montessori & Orman Okulu | Tuzla Aydinli, Istanbul", pw / 2, y, { align: "center" });
-  doc.text("eposta@bircicekkoleji.com | bircicekkoleji.com", pw / 2, y + 4, { align: "center" });
-
-  return doc;
-}
-
-function downloadPDF() {
-  if (appState.lastPDF) {
-    const childName = (document.getElementById("childFirstName")?.value?.trim() || "cocuk") + "_" + (document.getElementById("childLastName")?.value?.trim() || "");
-    appState.lastPDF.save("BirCicek_OdemePlani_" + childName + "_2026-2027.pdf");
-  } else {
-    showToast("PDF bulunamadı, lütfen tekrar kaydedin.");
   }
 }
 
@@ -1863,7 +1521,7 @@ async function logGiris(user) {
 // ═══════════════════════════════════════════════════════
 // EMAİL GÖNDERME (EmailJS)
 // ═══════════════════════════════════════════════════════
-async function sendEmail(data, pdfBase64) {
+async function sendEmail(data) {
   emailjs.init(EMAILJS_CONFIG.publicKey);
   const h = appState.hesaplama;
   const fatura = data.faturaIstegi ? "EVET - Fatura maile gönderilsin" : "Hayır";
@@ -1888,11 +1546,10 @@ II. DÖNEM (Şubat - Haziran) — Aylık ${fmt(data.iiDonemAylik)} TL
   5 Haziran 2027:           ${fmt(data.iiDonemAylik)} TL
 ${"─".repeat(50)}
 DİĞER ÖDEMELER:
-  5 Temmuz 2026 - Eğitim Materyalleri: 36.000 TL
-  5 Ağustos 2026 - Bir Çiçek Koleji Okul Kıyafeti: 14.700 TL (Ön Kayıt: 9.555 TL)
-  5 Eylül 2026  - Orman Okulu Kıyafeti: Eylül başında ilan edilecek
-  5 Ekim 2026   - Orman Okulu I. Dönem Servis: Ekim başında ilan edilecek
-  5 Şubat 2027  - Orman Okulu II. Dönem Servis: Şubat başında ilan edilecek
+  5 Temmuz 2026 - Eğitim Materyalleri: 35.000 TL
+  5 Eylül 2026  - Orman Okulu I. Dönem Servis: ${data.referansliGeliyor ? "9.000 TL (Referans indirimi uygulanacak)" : "9.000 TL"}
+  5 Eylül 2026  - Orman Okulu Kıyafeti: ${data.kiyafetUcretsiz ? "ÜCRETSİZ (Referans)" : "5.500 TL"}
+  5 Şubat 2027  - Orman Okulu II. Dönem Servis: 10.000 TL
 ${"=".repeat(50)}
 Fatura Tercihi: ${fatura}`;
 
@@ -1953,7 +1610,7 @@ ${odemeTablosu}
 REFERANS KODUNUZ: ${data.referansKodu}
 ─────────────────────────────────────────
 Bu kodu arkadaşlarınızla paylaşın! Her kayıt için sürpriz
-avantajlar kazanın — 3 kayıtta eğitim materyalleri ücretinin %50'si düşülür.
+avantajlar kazanın — 3 kayıtta eğitim materyalleri bedava.
 
 ─────────────────────────────────────────
 
@@ -2020,7 +1677,7 @@ async function loadHesapBilgileri() {
           <div style="font-size:13px; opacity:0.8; margin-top:8px;">Getirdiğiniz kayıt sayısı: <strong>${refSayi}/3</strong></div>
           ${refSayi >= 1 ? '<div style="font-size:12px; margin-top:4px; opacity:0.8;">✓ I. Dönem Servis ücreti — <strong>alınmaz!</strong></div>' : ''}
           ${refSayi >= 2 ? '<div style="font-size:12px; opacity:0.8;">✓ II. Dönem Servis ücreti — <strong>alınmaz!</strong></div>' : ''}
-          ${refSayi >= 3 ? '<div style="font-size:12px; opacity:0.8;">✓ Eğitim Materyalleri ücretinin %50\'si — <strong>düşülür!</strong></div>' : ''}
+          ${refSayi >= 3 ? '<div style="font-size:12px; opacity:0.8;">✓ Eğitim Materyalleri ücreti — <strong>alınmaz!</strong></div>' : ''}
         </div>
       </div>`;
   } catch(e) { el.innerHTML = "Yükleme hatası: " + e.message; }
@@ -2151,7 +1808,7 @@ async function loadRefList() {
     snap.forEach(doc => {
       const d = doc.data();
       const say = d.kayitSayisi || 0;
-      const indirim = say >= 3 ? "🎉 Materyal %50 İndirim" : say >= 2 ? "✅ Servis I+II Bedava" : say >= 1 ? "✅ Servis I Bedava" : "—";
+      const indirim = say >= 3 ? "🎉 Materyal Bedava" : say >= 2 ? "✅ Servis I+II Bedava" : say >= 1 ? "✅ Servis I Bedava" : "—";
       const row = document.createElement("div");
       row.style.cssText = "padding:14px 20px; display:grid; grid-template-columns:1.5fr 1.5fr 0.5fr 0.5fr 0.5fr 1fr; gap:8px; border-bottom:1px solid var(--cream-dark); font-size:13px; align-items:center;";
       row.innerHTML = `
@@ -2183,7 +1840,7 @@ async function adminOnayla(docId, veliEmail, cocukAdi, refKodu) {
         emailjs.init(EMAILJS_CONFIG.publicKey);
         const siraMetni = yeniSayi === 1 ? "1. referans kaydınız onaylandı! I. Dönem Orman Okulu Servis ücretiniz alınmayacaktır." 
           : yeniSayi === 2 ? "2. referans kaydınız onaylandı! II. Dönem Orman Okulu Servis ücretiniz de alınmayacaktır."
-          : "3. referans kaydınız onaylandı! Eğitim Materyalleri ücretinizin %50'si düşülecektir. Tebrikler!";
+          : "3. referans kaydınız onaylandı! Eğitim Materyalleri ücretiniz alınmayacaktır. Tebrikler!";
         await emailjs.send(EMAILJS_CONFIG.serviceId, EMAILJS_CONFIG.templateId, {
           to_email: refDoc.data().email,
           cocuk_adi: "Referans Güncelleme",
@@ -2279,19 +1936,6 @@ function showToast(msg) {
   t.textContent = msg;
   t.classList.add("show");
   setTimeout(() => t.classList.remove("show"), 3000);
-}
-
-function toggleDuyuru() {
-  const el = document.getElementById("duyuruDevam");
-  const btn = document.getElementById("btnDuyuruToggle");
-  const arrow = document.getElementById("duyuruArrow");
-  if (!el) return;
-  const open = el.style.display === "none";
-  el.style.display = open ? "block" : "none";
-  if (arrow) arrow.style.transform = open ? "rotate(180deg)" : "rotate(0deg)";
-  if (btn) btn.innerHTML = open 
-    ? '📖 Yazıyı Kapat <span id="duyuruArrow" style="transition:transform 0.3s; transform:rotate(180deg);">▼</span>'
-    : '📖 Yazının Devamını Oku <span id="duyuruArrow" style="transition:transform 0.3s;">▼</span>';
 }
 
 function scrollToInfo() {
@@ -2423,4 +2067,8 @@ function scrollToInfo() {
   padding:7px 14px; font-size:12px; font-weight:700; cursor:pointer; margin-left:6px;
 }
 .badge-beklemede { background:#FEF3C7; color:#92400E; padding:3px 10px; border-radius:50px; font-size:11px; font-weight:700; }
-.badge-onaylandi { background:var(--forest-pale); color:var(-
+.badge-onaylandi { background:var(--forest-pale); color:var(--forest); padding:3px 10px; border-radius:50px; font-size:11px; font-weight:700; }
+.badge-reddedildi { background:#fee2e2; color:#dc2626; padding:3px 10px; border-radius:50px; font-size:11px; font-weight:700; }
+</style>
+</body>
+</html>
