@@ -1372,10 +1372,6 @@ updateCountdown();
 // AUTH
 // ═══════════════════════════════════════════════════════
 function signInWithGoogle() {
-  // Yeni giriş denemesi - eski "yetkisiz" işaretini temizle
-  // Böylece eğer veli arada listeye eklenmişse erişim alabilir
-  window._yetkisizKullanici = null;
-  
   const provider = new firebase.auth.GoogleAuthProvider();
   showLoading("Google ile giriş yapılıyor...");
   
@@ -1410,11 +1406,6 @@ function signOut() {
 
 auth.onAuthStateChanged(user => {
   if (user) {
-    // Eğer bu kullanıcı az önce izinsiz olarak işaretlendiyse onLogin'i çağırma
-    if(window._yetkisizKullanici === user.email) {
-      console.log("⛔ Bu kullanıcı yetkisiz, onLogin atlanıyor:", user.email);
-      return;
-    }
     currentUser = user;
     hideLoading();
     onLogin(user);
@@ -1424,10 +1415,6 @@ auth.onAuthStateChanged(user => {
 // Redirect sonucunu yakala (mobil giriş için)
 auth.getRedirectResult().then(result => {
   if(result && result.user) {
-    if(window._yetkisizKullanici === result.user.email) {
-      console.log("⛔ Yetkisiz kullanıcı, redirect ignore");
-      return;
-    }
     hideLoading();
     onLogin(result.user);
   }
@@ -1452,11 +1439,6 @@ async function onLogin(user) {
   const izinVar = await veliIzinliMi(user.email);
   if(!izinVar) {
     console.warn("🔒 İzinsiz veli giriş denemesi:", user.email);
-    
-    // ⚠️ KRITIK: Bu maili "yetkisiz" olarak işaretle
-    // Böylece signOut sonrası tetiklenecek onAuthStateChanged ve
-    // getRedirectResult callback'leri onLogin'i tekrar çağırmaz
-    window._yetkisizKullanici = user.email;
     
     // Sırasıyla:
     // 1. Önce modal'ı DOM'a yerleştir (ekran değişikliğinden ÖNCE)
