@@ -1372,6 +1372,10 @@ updateCountdown();
 // AUTH
 // ═══════════════════════════════════════════════════════
 function signInWithGoogle() {
+  // Yeni giriş denemesi - eski "yetkisiz" işaretini temizle
+  // Böylece eğer veli arada listeye eklenmişse erişim alabilir
+  window._yetkisizKullanici = null;
+  
   const provider = new firebase.auth.GoogleAuthProvider();
   showLoading("Google ile giriş yapılıyor...");
   
@@ -1405,12 +1409,28 @@ function signOut() {
 }
 
 auth.onAuthStateChanged(user => {
-  if (user) { currentUser = user; hideLoading(); onLogin(user); }
+  if (user) {
+    // Eğer bu kullanıcı az önce izinsiz olarak işaretlendiyse onLogin'i çağırma
+    if(window._yetkisizKullanici === user.email) {
+      console.log("⛔ Bu kullanıcı yetkisiz, onLogin atlanıyor:", user.email);
+      return;
+    }
+    currentUser = user;
+    hideLoading();
+    onLogin(user);
+  }
 });
 
 // Redirect sonucunu yakala (mobil giriş için)
 auth.getRedirectResult().then(result => {
-  if(result && result.user) { hideLoading(); onLogin(result.user); }
+  if(result && result.user) {
+    if(window._yetkisizKullanici === result.user.email) {
+      console.log("⛔ Yetkisiz kullanıcı, redirect ignore");
+      return;
+    }
+    hideLoading();
+    onLogin(result.user);
+  }
 }).catch(err => {
   hideLoading();
   if(err.code !== "auth/redirect-cancelled-by-user") {
@@ -1431,35 +1451,65 @@ async function onLogin(user) {
   // ═══ VELİ İZİN KONTROLÜ ═══
   const izinVar = await veliIzinliMi(user.email);
   if(!izinVar) {
-    // İzinsiz kullanıcı - çıkış yap ve uyarı göster
-    hideLoading();
-    try { await auth.signOut(); } catch(e) {}
-    currentUser = null;
-    window._onLoginYapildi = false;
-    sessionStorage.clear();
-    goToScreen("screen-hero");
-    setTimeout(() => {
-      showToast("⚠️ Bu sistem yalnızca mevcut okul velilerimize özeldir");
-    }, 300);
-    // Detaylı uyarı modalı göster
+    console.warn("🔒 İzinsiz veli giriş denemesi:", user.email);
+    
+    // ⚠️ KRITIK: Bu maili "yetkisiz" olarak işaretle
+    // Böylece signOut sonrası tetiklenecek onAuthStateChanged ve
+    // getRedirectResult callback'leri onLogin'i tekrar çağırmaz
+    window._yetkisizKullanici = user.email;
+    
+    // Sırasıyla:
+    // 1. Önce modal'ı DOM'a yerleştir (ekran değişikliğinden ÖNCE)
+    // 2. Sonra Firebase çıkış yap
+    // 3. En son ekrana yönlendir
+    
+    // 1) Eski modal varsa temizle
+    const eskiModal = document.getElementById("yetkisizModal");
+    if(eskiModal) eskiModal.remove();
+    
+    // 2) Modal HTML'ini hazırla (CSS'inde !important ile her şeyi geçer)
     const modalHtml =
-      '<div id="yetkisizModal" style="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.6);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;">' +
-        '<div style="background:white;border-radius:16px;max-width:440px;width:100%;padding:32px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.3);">' +
+      '<div id="yetkisizModal" style="position:fixed !important;top:0 !important;left:0 !important;right:0 !important;bottom:0 !important;background:rgba(0,0,0,0.7) !important;z-index:99999 !important;display:flex !important;align-items:center !important;justify-content:center !important;padding:20px !important;">' +
+        '<div style="background:white;border-radius:16px;max-width:440px;width:100%;padding:32px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.3);font-family:\'Outfit\',sans-serif;">' +
           '<div style="font-size:48px;margin-bottom:12px;">🔒</div>' +
           '<h2 style="color:#2A4D38;font-family:Georgia,serif;margin:0 0 12px;font-size:22px;">Erişim Kısıtlı</h2>' +
-          '<p style="color:#555;line-height:1.7;margin:0 0 20px;">Bu kayıt yenileme sistemi <strong>yalnızca Bir Çiçek Koleji Anaokulu\'nun mevcut velilerine</strong> özeldir.</p>' +
+          '<p style="color:#555;line-height:1.7;margin:0 0 12px;font-size:14px;">Bu kayıt yenileme sistemi <strong>yalnızca Bir Çiçek Koleji Anaokulu\'nun mevcut velilerine</strong> özeldir.</p>' +
+          '<div style="background:#F5F5F5;border-radius:8px;padding:10px 14px;margin-bottom:16px;font-size:12px;color:#666;font-family:monospace;word-break:break-all;">' + (user.email || "?") + '</div>' +
           '<div style="background:#FBF6E9;border-left:4px solid #B8962E;padding:14px 16px;border-radius:8px;text-align:left;margin-bottom:20px;">' +
-            '<div style="font-weight:600;color:#2A4D38;margin-bottom:6px;">Yeni kayıt için:</div>' +
-            '<a href="https://yenikayit.bircicekkoleji.com" style="color:#2A4D38;text-decoration:none;font-weight:600;">yenikayit.bircicekkoleji.com →</a>' +
+            '<div style="font-weight:600;color:#2A4D38;margin-bottom:6px;font-size:14px;">Yeni kayıt için:</div>' +
+            '<a href="https://yenikayit.bircicekkoleji.com" style="color:#2A4D38;text-decoration:none;font-weight:600;font-size:14px;">yenikayit.bircicekkoleji.com →</a>' +
           '</div>' +
           '<div style="font-size:13px;color:#666;line-height:1.7;">Hata olduğunu düşünüyorsanız:<br>' +
             '<strong>📞 0216 393 54 57</strong><br>' +
             '<strong>💬 0555 103 54 57</strong>' +
           '</div>' +
-          '<button onclick="document.getElementById(\'yetkisizModal\').remove()" style="margin-top:20px;background:#2A4D38;color:white;border:none;padding:12px 28px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;">Tamam</button>' +
+          '<button onclick="document.getElementById(\'yetkisizModal\').remove()" style="margin-top:20px;background:#2A4D38;color:white;border:none;padding:12px 28px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;font-family:\'Outfit\',sans-serif;">Tamam</button>' +
         '</div>' +
       '</div>';
+    
+    // 3) Modal'ı DOM'a ekle - kesin görünmesi için requestAnimationFrame içinde
     document.body.insertAdjacentHTML("beforeend", modalHtml);
+    
+    // 4) Yükleme animasyonunu kapat ve ana ekrana yönlendir
+    hideLoading();
+    currentUser = null;
+    window._onLoginYapildi = false;
+    sessionStorage.clear();
+    goToScreen("screen-hero");
+    
+    // 5) Firebase çıkış (modal görünür hale geldikten sonra)
+    requestAnimationFrame(() => {
+      try { auth.signOut(); } catch(e) { console.warn("signOut hatası:", e); }
+      
+      // 6) 100ms sonra modal'ın hala DOM'da olduğunu kontrol et, yoksa tekrar ekle
+      setTimeout(() => {
+        if(!document.getElementById("yetkisizModal")) {
+          console.warn("⚠️ Modal silinmiş, tekrar ekleniyor");
+          document.body.insertAdjacentHTML("beforeend", modalHtml);
+        }
+      }, 100);
+    });
+    
     return;
   }
   // ═══ İzin OK, giriş akışına devam ═══
