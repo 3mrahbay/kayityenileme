@@ -1125,7 +1125,7 @@ input.price-input { font-size:22px; font-weight:600; font-family:'Playfair Displ
         </div>
         <div class="referans-step">
           <div class="step-num">3</div>
-          <div class="step-text"><strong>3. Kayıt:</strong> Eğitim Materyalleri ücretinin %50'si — <strong>düşülür!</strong></div>
+          <div class="step-text"><strong>3. Kayıt:</strong> Okul Kıyafeti ücreti — <strong>alınmaz!</strong></div>
         </div>
       </div>
     </div>
@@ -1236,8 +1236,8 @@ input.price-input { font-size:22px; font-weight:600; font-family:'Playfair Displ
         <div style="display:flex; gap:14px; align-items:center; background:white; border-radius:12px; padding:14px 16px; border:2px solid var(--amber); box-shadow:0 3px 12px rgba(196,136,10,0.12);">
           <div style="width:40px; height:40px; border-radius:50%; background:linear-gradient(135deg, var(--forest), var(--forest-mid)); display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0;">🎉</div>
           <div>
-            <div style="font-weight:700; color:var(--forest); font-size:14px;">Eğitim Materyalleri %50 İndirim!</div>
-            <div style="font-size:12px; color:var(--text-light); margin-top:2px;">Üçüncü kayıtta 36.000 TL'lik materyal ücretinin yarısı düşülür</div>
+            <div style="font-weight:700; color:var(--forest); font-size:14px;">Okul Kıyafeti Ücretsiz!</div>
+            <div style="font-size:12px; color:var(--text-light); margin-top:2px;">Üçüncü kayıtta okul kıyafeti ücreti alınmaz</div>
           </div>
         </div>
       </div>
@@ -2217,7 +2217,7 @@ async function loadHesapBilgileri() {
           <div style="font-size:13px; opacity:0.8; margin-top:8px;">Getirdiğiniz kayıt sayısı: <strong>${refSayi}/3</strong></div>
           ${refSayi >= 1 ? '<div style="font-size:12px; margin-top:4px; opacity:0.8;">✓ I. Dönem Servis ücreti — <strong>alınmaz!</strong></div>' : ''}
           ${refSayi >= 2 ? '<div style="font-size:12px; opacity:0.8;">✓ II. Dönem Servis ücreti — <strong>alınmaz!</strong></div>' : ''}
-          ${refSayi >= 3 ? '<div style="font-size:12px; opacity:0.8;">✓ Eğitim Materyalleri ücretinin %50\'si — <strong>düşülür!</strong></div>' : ''}
+          ${refSayi >= 3 ? '<div style="font-size:12px; opacity:0.8;">✓ Okul Kıyafeti ücreti — <strong>alınmaz!</strong></div>' : ''}
         </div>
       </div>`;
   } catch(e) { el.innerHTML = "Yükleme hatası: " + e.message; }
