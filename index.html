@@ -1396,7 +1396,12 @@ function signInWithGoogle() {
 }
 
 function signOut() {
-  auth.signOut().then(() => { currentUser = null; goToScreen("screen-hero"); });
+  auth.signOut().then(() => {
+    currentUser = null;
+    window._onLoginYapildi = false;
+    sessionStorage.clear();
+    goToScreen("screen-hero");
+  });
 }
 
 auth.onAuthStateChanged(user => {
@@ -1414,6 +1419,13 @@ auth.getRedirectResult().then(result => {
 });
 
 async function onLogin(user) {
+  // 🛡️ Çoklu tetiklenme koruması
+  // signInWithPopup, onAuthStateChanged ve getRedirectResult aynı user için 3 kez tetikleyebilir
+  if(currentUser && currentUser.uid === user.uid && window._onLoginYapildi) {
+    console.log("onLogin zaten çalıştı bu kullanıcı için, atlanıyor");
+    return;
+  }
+  window._onLoginYapildi = true;
   currentUser = user;
 
   // ═══ VELİ İZİN KONTROLÜ ═══
@@ -1423,6 +1435,8 @@ async function onLogin(user) {
     hideLoading();
     try { await auth.signOut(); } catch(e) {}
     currentUser = null;
+    window._onLoginYapildi = false;
+    sessionStorage.clear();
     goToScreen("screen-hero");
     setTimeout(() => {
       showToast("⚠️ Bu sistem yalnızca mevcut okul velilerimize özeldir");
@@ -1928,9 +1942,18 @@ async function handleReferansKayit(kullanilanKod) {
 }
 
 // ═══════════════════════════════════════════════════════
-// GİRİŞ TAKİBİ
+// GİRİŞ TAKİBİ (Duplicate koruması ile)
 // ═══════════════════════════════════════════════════════
 async function logGiris(user) {
+  // 🛡️ Aynı browser oturumunda mail tekrarını engelle
+  // sessionStorage tarayıcı sekmesi kapanınca silinir
+  const sessionKey = "giris_mail_" + user.email;
+  if(sessionStorage.getItem(sessionKey)) {
+    console.log("Giriş bildirimi zaten gönderildi (bu oturum), atlanıyor");
+    return;
+  }
+  sessionStorage.setItem(sessionKey, new Date().toISOString());
+
   try {
     await db.collection("girisler").add({
       email: user.email,
