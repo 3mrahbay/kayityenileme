@@ -1375,27 +1375,37 @@ updateCountdown();
 // AUTH
 // ═══════════════════════════════════════════════════════
 function signInWithGoogle() {
+  console.log("🔵 signInWithGoogle başladı");
   const provider = new firebase.auth.GoogleAuthProvider();
+  // Her seferinde hesap seçim ekranı çıksın (cache'den otomatik giriş yapmasın)
+  provider.setCustomParameters({ prompt: "select_account" });
   showLoading("Google ile giriş yapılıyor...");
   
-  // Mobilde redirect, masaüstünde popup kullan
-  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-  
-  if(isMobile) {
-    auth.signInWithRedirect(provider);
-  } else {
-    auth.signInWithPopup(provider)
-      .then(result => { hideLoading(); onLogin(result.user); })
-      .catch(err => {
-        // Popup başarısız olursa redirect'e geç
-        if(err.code === "auth/popup-closed-by-user" || err.code === "auth/popup-blocked") {
-          auth.signInWithRedirect(provider);
-        } else {
+  // Hem mobilde hem masaüstünde popup kullan, redirect sadece fallback
+  // (signInWithRedirect mobilde state kayboluyor sorununu yaşatabiliyor)
+  auth.signInWithPopup(provider)
+    .then(result => { 
+      console.log("✅ signInWithPopup başarılı:", result.user.email);
+      hideLoading(); 
+      onLogin(result.user); 
+    })
+    .catch(err => {
+      console.warn("⚠️ signInWithPopup hatası:", err.code, err.message);
+      // Popup gerçekten engellenmişse redirect'e geç (son çare)
+      if(err.code === "auth/popup-closed-by-user") {
+        hideLoading();
+        // Kullanıcı kendisi kapattı, hata gösterme
+      } else if(err.code === "auth/popup-blocked" || err.code === "auth/cancelled-popup-request") {
+        console.log("📱 Popup engellendi, redirect deneniyor");
+        auth.signInWithRedirect(provider).catch(redirectErr => {
           hideLoading();
-          showToast("Giriş hatası: " + (err.message || err));
-        }
-      });
-  }
+          showToast("Giriş hatası: " + (redirectErr.message || redirectErr));
+        });
+      } else {
+        hideLoading();
+        showToast("Giriş hatası: " + (err.message || err));
+      }
+    });
 }
 
 function signOut() {
@@ -1407,7 +1417,10 @@ function signOut() {
   });
 }
 
+// onAuthStateChanged: Firebase auth durumu her değiştiğinde tetiklenir
+// Sayfa yüklenme + login + logout + token yenileme gibi durumlarda çalışır
 auth.onAuthStateChanged(user => {
+  console.log("🔔 onAuthStateChanged tetiklendi, user:", user ? user.email : "null");
   if (user) {
     hideLoading();
     onLogin(user);
@@ -1415,27 +1428,33 @@ auth.onAuthStateChanged(user => {
 });
 
 // Redirect sonucunu yakala (mobil giriş için)
+// Önemli: getRedirectResult sayfa yüklendiğinde HER ZAMAN çalışır,
+// redirect olmadıysa result.user null döner
 auth.getRedirectResult().then(result => {
+  console.log("🔄 getRedirectResult tamamlandı, result:", result && result.user ? result.user.email : "user yok");
   if(result && result.user) {
     hideLoading();
     onLogin(result.user);
   }
 }).catch(err => {
   hideLoading();
+  console.error("❌ getRedirectResult hatası:", err.code, err.message);
   if(err.code !== "auth/redirect-cancelled-by-user") {
-    console.warn("Redirect hatası:", err);
+    showToast("Giriş hatası: " + (err.message || err));
   }
 });
 
 async function onLogin(user) {
+  console.log("🟢 onLogin çağrıldı, user:", user.email, "| Mevcut flag:", window._onLoginYapilanEmail);
   // 🛡️ Çoklu tetiklenme koruması — email bazlı, sayfa yenilenince sıfırlanır
   // signInWithPopup, onAuthStateChanged ve getRedirectResult aynı user için 3 kez tetikleyebilir
   if(window._onLoginYapilanEmail === user.email) {
-    console.log("onLogin zaten çalıştı bu kullanıcı için, atlanıyor:", user.email);
+    console.log("⏭️ onLogin zaten çalıştı bu kullanıcı için, atlanıyor:", user.email);
     return;
   }
   window._onLoginYapilanEmail = user.email;
   currentUser = user;
+  console.log("🟢 onLogin akışı devam ediyor...");
 
   // ═══ VELİ İZİN KONTROLÜ ═══
   const izinVar = await veliIzinliMi(user.email);
