@@ -3240,7 +3240,8 @@ async function goToOdemeBilgileri() {
     const onOdeme = d.onOdeme || d.yeniAylikUcret || 0;
     
     const aylar = [
-      {ay:"Eylül (Ön Ödeme)", no:9, tutar:onOdeme, donem:"I"},
+      {ay:"Ön Ödeme (Kayıt Günü)", no:0, tutar:onOdeme, donem:"I", onOdeme:true},
+      {ay:"Eylül", no:9, tutar:iAylik, donem:"I"},
       {ay:"Ekim", no:10, tutar:iAylik, donem:"I"},
       {ay:"Kasım", no:11, tutar:iAylik, donem:"I"},
       {ay:"Aralık", no:12, tutar:iAylik, donem:"I"},
@@ -3259,27 +3260,36 @@ async function goToOdemeBilgileri() {
     
     aylar.forEach((a, idx) => {
       const yil = a.no >= 9 ? 2026 : 2027;
-      const tOdemeler = odemeler.filter(o => o.taksitIndex === idx || (o.taksitAy === a.no && o.taksitYil === yil));
+      // Ön Ödeme için filtreleme: taksitIndex === 0 veya onOdeme: true işaretli ödemeler
+      const tOdemeler = a.onOdeme
+        ? odemeler.filter(o => o.taksitIndex === 0 || o.onOdeme === true)
+        : odemeler.filter(o => o.taksitIndex === idx || (o.taksitAy === a.no && o.taksitYil === yil));
       const tOdenen = tOdemeler.reduce((t,o) => t + (o.tutar||0), 0);
       const tamOdendi = tOdenen >= a.tutar;
       const kismi = tOdenen > 0 && tOdenen < a.tutar;
-      const gecikti = new Date(`${yil}-${String(a.no).padStart(2,"0")}-05`) < now && !tamOdendi;
+      // Ön Ödeme'nin "gecikme" durumu yok — kayıt anında ödenir
+      const gecikti = a.onOdeme ? false : (new Date(`${yil}-${String(a.no).padStart(2,"0")}-05`) < now && !tamOdendi);
       
       if(a.donem !== currentDonem) {
         currentDonem = a.donem;
         taksitHtml += `<div style="padding:8px 20px; background:var(--cream); font-size:11px; font-weight:700; color:var(--text-mid);">${a.donem}. Dönem</div>`;
       }
       
-      const bg = tamOdendi ? "#F0FFF4" : gecikti ? "#FEF2F2" : kismi ? "#FFFBEB" : "";
+      const bg = tamOdendi ? "#F0FFF4" : gecikti ? "#FEF2F2" : kismi ? "#FFFBEB" : a.onOdeme ? "#FFFBEB" : "";
       let durumHtml = "";
       if(tamOdendi) durumHtml = '<span style="color:var(--forest); font-weight:700; font-size:12px;">✅ Ödendi</span>';
       else if(kismi) durumHtml = `<span style="color:var(--amber); font-weight:700; font-size:12px;">🔶 ${fmt(tOdenen)} ₺ ödendi</span>`;
       else if(gecikti) durumHtml = '<span style="color:#dc2626; font-weight:700; font-size:12px;">⚠️ Gecikmiş</span>';
+      else if(a.onOdeme) durumHtml = '<span style="color:var(--amber); font-weight:700; font-size:12px;">🔑 Kayıt anında</span>';
       else durumHtml = '<span style="color:var(--text-light); font-size:12px;">⏳ Bekliyor</span>';
       
+      // Tarih sütunu: Ön Ödeme için "Kayıt Tescili", diğerleri için 5 [Ay] [Yıl]
+      const tarihText = a.onOdeme ? "Kayıt Tescili" : `5 ${ayIsimleri[a.no]} ${yil}`;
+      const tarihStyle = a.onOdeme ? "color:var(--amber); font-weight:600; font-size:12px;" : "font-size:12px; color:var(--text-light);";
+      
       taksitHtml += `<div style="display:grid; grid-template-columns:1.5fr 1fr 1fr 1.2fr; padding:14px 20px; border-bottom:1px solid var(--cream-dark); align-items:center; background:${bg};">
-        <div style="font-weight:600; font-size:14px;">${a.ay}</div>
-        <div style="font-size:12px; color:var(--text-light);">5 ${ayIsimleri[a.no]} ${yil}</div>
+        <div style="font-weight:600; font-size:14px;">${a.onOdeme ? "🔑 " : ""}${a.ay}</div>
+        <div style="${tarihStyle}">${tarihText}</div>
         <div style="font-weight:700; font-size:14px;">${fmt(a.tutar)} ₺</div>
         <div>${durumHtml}</div>
       </div>`;
@@ -3509,6 +3519,8 @@ function hesaplaGecikenTaksit(s) {
   const taksitler = getTaksitPlani(s);
   let geciken = 0;
   taksitler.forEach(t => {
+    // Ön Ödeme'nin sabit tarihi yok (kayıt günü), gecikme hesabına dahil edilmez
+    if(t.onOdeme) return;
     if(new Date(t.tarih) < now && !t.odendi) geciken++;
   });
   return geciken;
@@ -3522,7 +3534,8 @@ function getTaksitPlani(s) {
   const onOdeme = d.onOdeme || iAylik;
 
   const aylar = [
-    {ay:"Eylül (Ön Ödeme)", no:9, donem:"I", tutar: onOdeme},
+    {ay:"Ön Ödeme (Kayıt Günü)", no:0, donem:"I", tutar: onOdeme, onOdeme:true},
+    {ay:"Eylül", no:9, donem:"I", tutar: iAylik},
     {ay:"Ekim", no:10, donem:"I", tutar: iAylik},
     {ay:"Kasım", no:11, donem:"I", tutar: iAylik}, 
     {ay:"Aralık", no:12, donem:"I", tutar: iAylik},
@@ -3535,10 +3548,13 @@ function getTaksitPlani(s) {
   ];
   
   return aylar.map((a, idx) => {
-    const yil = a.no >= 9 ? 2026 : 2027;
-    const tarih = `${yil}-${String(a.no).padStart(2,"0")}-05`;
-    // Bir taksite birden fazla kısmi ödeme olabilir
-    const taksitOdemeleri = s.odemeler.filter(o => o.taksitIndex === idx || (o.taksitAy === a.no && o.taksitYil === yil));
+    // Ön Ödeme tarihi yok (kayıt günü), gecikme kontrolü için çok eski tarih veriyoruz
+    const yil = a.onOdeme ? 2026 : (a.no >= 9 ? 2026 : 2027);
+    const tarih = a.onOdeme ? "kayit-gunu" : `${yil}-${String(a.no).padStart(2,"0")}-05`;
+    // Ön Ödeme: taksitIndex 0 veya onOdeme:true işaretli; diğer aylar için normal filtre
+    const taksitOdemeleri = a.onOdeme
+      ? s.odemeler.filter(o => o.taksitIndex === 0 || o.onOdeme === true)
+      : s.odemeler.filter(o => o.taksitIndex === idx || (o.taksitAy === a.no && o.taksitYil === yil));
     const odenenToplam = taksitOdemeleri.reduce((t,o) => t + (o.tutar||0), 0);
     const tamOdendi = odenenToplam >= a.tutar;
     const kismiOdendi = odenenToplam > 0 && odenenToplam < a.tutar;
@@ -3547,7 +3563,8 @@ function getTaksitPlani(s) {
       odendi: tamOdendi, kismiOdendi: kismiOdendi,
       odenenToplam: odenenToplam, kalanTutar: Math.max(0, a.tutar - odenenToplam),
       taksitOdemeleri: taksitOdemeleri,
-      donem: a.donem
+      donem: a.donem,
+      onOdeme: a.onOdeme || false
     };
   });
 }
@@ -3678,19 +3695,21 @@ function renderTaksitPlani(s) {
       html += `<div style="padding:8px 16px; background:var(--cream); font-size:11px; font-weight:700; color:var(--text-mid);">${t.donem}. Dönem</div>`;
     }
     
-    const gecikti = new Date(t.tarih) < now && !t.odendi && !t.kismiOdendi;
-    const geciktiKismi = new Date(t.tarih) < now && t.kismiOdendi;
-    const bg = t.odendi ? "#F0FFF4" : (gecikti || geciktiKismi) ? "#FEF2F2" : t.kismiOdendi ? "#FFFBEB" : "";
+    // Ön Ödeme'nin sabit tarihi yok (kayıt günü), gecikme kontrolü yapılmaz
+    const gecikti = !t.onOdeme && new Date(t.tarih) < now && !t.odendi && !t.kismiOdendi;
+    const geciktiKismi = !t.onOdeme && new Date(t.tarih) < now && t.kismiOdendi;
+    const bg = t.odendi ? "#F0FFF4" : (gecikti || geciktiKismi) ? "#FEF2F2" : t.kismiOdendi ? "#FFFBEB" : t.onOdeme ? "#FFFBEB" : "";
     
     let durumIcon, durumText, durumColor;
     if(t.odendi) { durumIcon="✅"; durumText="Tam Ödendi"; durumColor="var(--forest)"; }
     else if(t.kismiOdendi && geciktiKismi) { durumIcon="⚠️"; durumText="Kısmi (gecikmiş)"; durumColor="#dc2626"; }
     else if(t.kismiOdendi) { durumIcon="🔶"; durumText="Kısmi Ödeme"; durumColor="var(--amber)"; }
     else if(gecikti) { durumIcon="⚠️"; durumText="Gecikmiş"; durumColor="#dc2626"; }
+    else if(t.onOdeme) { durumIcon="🔑"; durumText="Kayıt Anında"; durumColor="var(--amber)"; }
     else { durumIcon="⏳"; durumText="Bekliyor"; durumColor="var(--text-light)"; }
     
     const ayIsimleri = {9:"Eylül",10:"Ekim",11:"Kasım",12:"Aralık",1:"Ocak",2:"Şubat",3:"Mart",4:"Nisan",5:"Mayıs",6:"Haziran"};
-    const tarihStr = "5 " + (ayIsimleri[t.no]||"") + " " + t.yil;
+    const tarihStr = t.onOdeme ? "Kayıt Tescili" : "5 " + (ayIsimleri[t.no]||"") + " " + t.yil;
     
     // Ödenen sütunu
     const odenenStr = t.odenenToplam > 0 
@@ -3774,7 +3793,9 @@ function taksitOdePopup(idx, kalan, tam, ay, yil) {
   const ayIsimleri = {9:"Eylül",10:"Ekim",11:"Kasım",12:"Aralık",1:"Ocak",2:"Şubat",3:"Mart",4:"Nisan",5:"Mayıs",6:"Haziran"};
   popupTaksitData = { idx, kalan, tam, ay, yil };
   
-  document.getElementById("tp-popup-title").textContent = ayIsimleri[ay] + " " + yil + " Taksiti";
+  // Ön Ödeme için (idx=0, ay=0) özel başlık
+  const baslik = idx === 0 ? "Ön Ödeme (Kayıt Tescili)" : (ayIsimleri[ay] + " " + yil + " Taksiti");
+  document.getElementById("tp-popup-title").textContent = baslik;
   document.getElementById("tp-popup-info").textContent = "Taksit tutarı: " + fmt(tam) + " ₺ · Kalan: " + fmt(kalan) + " ₺";
   document.getElementById("tp-popup-tutar").value = kalan;
   document.getElementById("tp-popup-tutar").placeholder = fmt(kalan);
@@ -3785,7 +3806,8 @@ function taksitOdePopup(idx, kalan, tam, ay, yil) {
 
 async function taksitOdeKaydet() {
   const d = popupTaksitData;
-  if(!d.ay || !aktifOgrenciId) return;
+  // Ön Ödeme idx=0, ay=0 olabilir; öğrenci ID kontrolü yeterli
+  if(!aktifOgrenciId || d.idx === undefined) return;
   
   const tutar = parseFloat(document.getElementById("tp-popup-tutar").value) || 0;
   if(tutar <= 0) { showToast("⚠️ Tutar giriniz"); return; }
@@ -3795,8 +3817,10 @@ async function taksitOdeKaydet() {
   const not = document.getElementById("tp-popup-not").value;
   const ayIsimleri = {9:"Eylül",10:"Ekim",11:"Kasım",12:"Aralık",1:"Ocak",2:"Şubat",3:"Mart",4:"Nisan",5:"Mayıs",6:"Haziran"};
   
+  // Ön Ödeme için (idx=0) özel etiket
+  const taksitAdi = d.idx === 0 ? "Ön Ödeme (Kayıt Tescili)" : (ayIsimleri[d.ay] + " " + d.yil);
   const label = tutar < d.kalan ? "Kısmi ödeme" : "Tam ödeme";
-  if(!confirm(`${ayIsimleri[d.ay]} ${d.yil} — ${label}: ${fmt(tutar)} TL\nOnaylıyor musunuz?`)) return;
+  if(!confirm(`${taksitAdi} — ${label}: ${fmt(tutar)} TL\nOnaylıyor musunuz?`)) return;
   
   document.getElementById("taksit-ode-popup").style.display = "none";
   showLoading("Kaydediliyor...");
@@ -3806,7 +3830,7 @@ async function taksitOdeKaydet() {
       tutar: tutar,
       tarih: tarih,
       yontem: yontem,
-      aciklama: not || (ayIsimleri[d.ay] + " " + d.yil + (tutar < d.kalan ? " (kısmi)" : "")),
+      aciklama: not || (taksitAdi + (tutar < d.kalan ? " (kısmi)" : "")),
       taksitIndex: d.idx,
       taksitAy: d.ay,
       taksitYil: d.yil,
@@ -4083,8 +4107,8 @@ function exportOdemeExcel() {
       // Ücret bilgileri
       rows.push(["ÜCRET BİLGİLERİ"]);
       rows.push(["Aylık Ücret (Eğitim+Yemek):", aylik]);
-      rows.push(["Ön Ödeme (Eylül):", onOdeme]);
-      rows.push(["I. Dönem Aylık (Ekim-Ocak):", iAylik]);
+      rows.push(["Ön Ödeme (Kayıt Günü):", onOdeme]);
+      rows.push(["I. Dönem Aylık (Eylül-Ocak):", iAylik]);
       rows.push(["II. Dönem Aylık (Şubat-Haziran):", iiAylik]);
       rows.push(["Yıllık Toplam:", s.toplamTutar]);
       rows.push(["Toplam Ödenen:", s.toplamOdenen]);
@@ -4098,8 +4122,8 @@ function exportOdemeExcel() {
       const taksitler = getTaksitPlani(s);
       taksitler.forEach((t, i) => {
         const ayIsimleri = {9:"Eylül",10:"Ekim",11:"Kasım",12:"Aralık",1:"Ocak",2:"Şubat",3:"Mart",4:"Nisan",5:"Mayıs",6:"Haziran"};
-        const tarihStr = "5 " + (ayIsimleri[t.no]||"") + " " + t.yil;
-        const durum = t.odendi ? "✅ Ödendi" : t.kismiOdendi ? "🔶 Kısmi" : "⏳ Bekliyor";
+        const tarihStr = t.onOdeme ? "Kayıt Tescili" : "5 " + (ayIsimleri[t.no]||"") + " " + t.yil;
+        const durum = t.odendi ? "✅ Ödendi" : t.kismiOdendi ? "🔶 Kısmi" : t.onOdeme ? "🔑 Kayıt Anında" : "⏳ Bekliyor";
         
         // Ana satır
         let odenenStr = t.odenenToplam || "";
