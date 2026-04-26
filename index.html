@@ -1401,7 +1401,7 @@ function signInWithGoogle() {
 function signOut() {
   auth.signOut().then(() => {
     currentUser = null;
-    window._onLoginYapildi = false;
+    window._onLoginYapilanEmail = null;
     sessionStorage.clear();
     goToScreen("screen-hero");
   });
@@ -1409,7 +1409,6 @@ function signOut() {
 
 auth.onAuthStateChanged(user => {
   if (user) {
-    currentUser = user;
     hideLoading();
     onLogin(user);
   }
@@ -1429,13 +1428,13 @@ auth.getRedirectResult().then(result => {
 });
 
 async function onLogin(user) {
-  // 🛡️ Çoklu tetiklenme koruması
+  // 🛡️ Çoklu tetiklenme koruması — email bazlı, sayfa yenilenince sıfırlanır
   // signInWithPopup, onAuthStateChanged ve getRedirectResult aynı user için 3 kez tetikleyebilir
-  if(currentUser && currentUser.uid === user.uid && window._onLoginYapildi) {
-    console.log("onLogin zaten çalıştı bu kullanıcı için, atlanıyor");
+  if(window._onLoginYapilanEmail === user.email) {
+    console.log("onLogin zaten çalıştı bu kullanıcı için, atlanıyor:", user.email);
     return;
   }
-  window._onLoginYapildi = true;
+  window._onLoginYapilanEmail = user.email;
   currentUser = user;
 
   // ═══ VELİ İZİN KONTROLÜ ═══
@@ -1478,7 +1477,7 @@ async function onLogin(user) {
     // 4) Yükleme animasyonunu kapat ve ana ekrana yönlendir
     hideLoading();
     currentUser = null;
-    window._onLoginYapildi = false;
+    window._onLoginYapilanEmail = null;
     sessionStorage.clear();
     goToScreen("screen-hero");
     
