@@ -1014,6 +1014,9 @@ input.price-input { font-size:22px; font-weight:600; font-family:'Playfair Displ
         <div class="aylik-br-item"><span>I. Dönem Aylık</span><strong id="iDonemDisplay">–</strong></div>
         <div class="aylik-br-item"><span>II. Dönem Aylık</span><strong id="iiDonemDisplay">–</strong></div>
       </div>
+      <div style="margin-top:14px; padding:12px 14px; background:rgba(240,212,144,0.12); border-left:3px solid #F0D490; border-radius:8px; font-size:12.5px; line-height:1.6; color:rgba(255,255,255,0.92);">
+        <span style="color:#F0D490; font-weight:700;">*</span> Eğitim Ücreti <strong id="notEgitim">–</strong> + Yemek Ücreti <strong id="notYemek">–</strong> aylık toplam ücreti belirtir: <strong id="notToplam" style="color:#F0D490;">–</strong>
+      </div>
     </div>
 
     <!-- Tabs -->
@@ -1692,6 +1695,10 @@ function renderHesaplama() {
   if(el("iDonemDisplay"))    el("iDonemDisplay").textContent    = fmt(h.iDonemAylik)  + " TL";
   if(el("iiDonemDisplay"))   el("iiDonemDisplay").textContent   = fmt(h.iiDonemAylik) + " TL";
   if(el("onOdemeDisplay"))   el("onOdemeDisplay").textContent   = fmt(h.onOdeme) + " TL";
+  // Bilgilendirme notu — eğitim + yemek = aylık toplam
+  if(el("notEgitim")) el("notEgitim").textContent = fmt(h.egitim)    + " TL";
+  if(el("notYemek"))  el("notYemek").textContent  = fmt(h.yemek)     + " TL";
+  if(el("notToplam")) el("notToplam").textContent = fmt(h.yeniAylik) + " TL";
 
   // Dönem satırları
   const renderRows = (containerId, odemeler, renk) => {
