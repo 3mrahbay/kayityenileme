@@ -71,14 +71,15 @@ body {
 .logo-sub { font-size:11px; color:var(--text-light); font-weight:400; }
 .user-badge {
   display:flex; align-items:center; gap:10px;
-  background: var(--forest-pale);
-  border: 1px solid #C8E0C4;
+  background: var(--amber);
+  border: none;
   border-radius: 50px;
   padding: 6px 16px 6px 6px;
   font-size: 13px;
-  font-weight: 500;
-  color: var(--forest);
+  font-weight: 700;
+  color: white;
   cursor: pointer;
+  box-shadow:0 2px 8px rgba(196,136,10,0.35);
 }
 .user-avatar {
   width:28px; height:28px; border-radius:50%;
@@ -401,11 +402,11 @@ input.price-input { font-size:22px; font-weight:600; font-family:'Playfair Displ
 
 .form-actions { display:flex; justify-content:space-between; align-items:center; margin-top:8px; }
 .btn-back {
-  background:transparent; border:1px solid var(--border); color:var(--text-mid);
-  border-radius:50px; padding:12px 24px; font-size:14px; font-weight:500; cursor:pointer;
-  transition:all 0.2s;
+  background:var(--amber); border:none; color:white;
+  border-radius:50px; padding:12px 24px; font-size:14px; font-weight:700; cursor:pointer;
+  transition:all 0.2s; box-shadow:0 2px 8px rgba(196,136,10,0.35);
 }
-.btn-back:hover { background:var(--cream-dark); }
+.btn-back:hover { background:#B8860B; transform:translateY(-1px); }
 .btn-next {
   background:var(--forest); color:white; border:none;
   border-radius:50px; padding:14px 32px; font-size:15px; font-weight:600; cursor:pointer;
@@ -1282,6 +1283,21 @@ const SCHOOL_EMAIL = "eposta@bircicekkoleji.com";
 const ERKEN_KAYIT_SON_GUN = new Date("2026-06-15T23:59:59");
 
 // ═══════════════════════════════════════════════════════
+// YENİ AYLIK ÜCRET HESABI — tam %28 artış (yuvarlama YOK)
+// İstisna: 29.000 TL ödeyen velilerle 37.000 TL olarak anlaşıldı
+// (37.120 yerine). Diğer tüm ücretler tam ×1.28:
+//   26.000 → 33.280 · 27.000 → 34.560 · 28.000 → 35.840
+// Yeni özel anlaşma gerekirse buraya ekle: { 29000: 37000, 31000: 39000 }
+// ═══════════════════════════════════════════════════════
+const OZEL_UCRET_ANLASMALARI = { 29000: 37000 };
+
+function yeniAylikHesapla(mevcut) {
+  mevcut = parseInt(mevcut) || 0;
+  if(OZEL_UCRET_ANLASMALARI[mevcut]) return OZEL_UCRET_ANLASMALARI[mevcut];
+  return Math.round(mevcut * 1.28);
+}
+
+// ═══════════════════════════════════════════════════════
 // FIREBASE BAŞLATMA
 // ═══════════════════════════════════════════════════════
 let db, auth, currentUser;
@@ -1461,8 +1477,8 @@ function updatePreview() {
 
   if (!val || val < 1000 || !valid) { if(preview) preview.style.display = "none"; return; }
 
-  // Program fark etmeksizin: veli ne ödüyorsa onun %28 artışı (en yakın 1.000 TL'ye yuvarlanır)
-  let yeni = Math.round(val * 1.28 / 1000) * 1000;
+  // Program fark etmeksizin: veli ne ödüyorsa onun %28 artışı (29.000 için özel anlaşma: 37.000)
+  let yeni = yeniAylikHesapla(val);
   if(preview) preview.style.display = "flex";
   if(previewVal) previewVal.textContent = fmt(yeni) + " TL";
   // Dönemsel önizleme
@@ -1479,8 +1495,8 @@ function updatePreview() {
 // ÖDEME HESAPLAMA
 // ═══════════════════════════════════════════════════════
 function hesapla(mevcutAylik, program) {
-  // Program fark etmeksizin: veli mevcut ücretine %28 artış uygulanır (en yakın 1.000 TL'ye yuvarlanır)
-  let yeniAylik = Math.round(mevcutAylik * 1.28 / 1000) * 1000;
+  // Program fark etmeksizin: veli mevcut ücretine %28 artış uygulanır
+  let yeniAylik = yeniAylikHesapla(mevcutAylik);
 
   const egitim = Math.round(yeniAylik * 0.60);
   const yemek  = yeniAylik - egitim;
@@ -3045,7 +3061,7 @@ function hesaplaToplamKY(d) {
   }
   const mevcut = parseFloat(d.mevcutAylikUcret || d.currentFee || d.mevcutUcret || 0);
   if(mevcut > 0) {
-    const aylik = Math.round(mevcut * 1.28 / 1000) * 1000;
+    const aylik = yeniAylikHesapla(mevcut);
     const kalan = aylik * 9;
     const i = Math.round((kalan * 0.488) / 5 / 100) * 100;
     const ii = Math.round((kalan - i * 5) / 5);
@@ -3841,6 +3857,49 @@ function exportOdemeExcel() {
   .tp-header > div:nth-child(2), .tp-row > div:nth-child(2),
   .tp-header > div:nth-child(4), .tp-row > div:nth-child(4) { display:none; }
 }
+
+/* Yönlendirme butonları — sağ üstte belirgin amber */
+.user-badge span { color: rgba(255,255,255,0.95) !important; }
+.user-badge .user-avatar { background: white !important; color: var(--amber) !important; }
+
+/* Mobil alt yönlendirme çubuğu */
+.alt-nav-mobil {
+  display:none; gap:10px; justify-content:center; flex-wrap:wrap;
+  padding:18px 16px 28px 16px;
+}
+.alt-nav-mobil button {
+  background:var(--amber); color:white; border:none; border-radius:50px;
+  padding:13px 26px; font-size:14px; font-weight:700; cursor:pointer;
+  font-family:'Outfit',sans-serif; box-shadow:0 2px 8px rgba(196,136,10,0.35);
+}
+@media(max-width:768px) {
+  .alt-nav-mobil { display:flex; }
+}
 </style>
+
+<script>
+// Mobilde her ekranın altına yönlendirme butonları ekle
+document.addEventListener("DOMContentLoaded", function() {
+  document.querySelectorAll(".screen").forEach(function(scr) {
+    var nav = scr.querySelector("nav");
+    if(!nav) return;
+    var btns = [];
+    var back = nav.querySelector(".btn-back");
+    if(back) btns.push({ text: back.textContent.trim(), onclick: back.getAttribute("onclick") });
+    var badge = nav.querySelector(".user-badge");
+    if(badge && badge.getAttribute("onclick")) btns.push({ text: "🚪 Çıkış Yap", onclick: badge.getAttribute("onclick") });
+    if(btns.length === 0) return;
+    var bar = document.createElement("div");
+    bar.className = "alt-nav-mobil";
+    btns.forEach(function(b) {
+      var el = document.createElement("button");
+      el.textContent = b.text;
+      el.setAttribute("onclick", b.onclick);
+      bar.appendChild(el);
+    });
+    scr.appendChild(bar);
+  });
+});
+</script>
 </body>
 </html>
