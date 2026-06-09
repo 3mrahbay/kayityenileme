@@ -1281,23 +1281,29 @@ const BREVO_PROXY_URL = "https://script.google.com/macros/s/AKfycbwUNvVhTCvxUKOM
 async function mailGonder(aliciEmail, konu, mesaj, aliciAdi) {
   // İsim boş olmamalı (Brevo 400 hatası verir) — yoksa email'in @ öncesini kullan
   const isim = (aliciAdi && aliciAdi.trim()) ? aliciAdi.trim() : aliciEmail.split("@")[0];
-  // Düz metni basit HTML'e çevir (satır sonları <br>)
+  // Düz metni basit HTML'e çevir
   const htmlIcerik = `<div style="font-family:Arial,sans-serif;font-size:14px;color:#2d2d2d;line-height:1.6;white-space:pre-wrap;">${mesaj.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")}</div>`;
   try {
-    await fetch(BREVO_PROXY_URL, {
+    const response = await fetch(BREVO_PROXY_URL, {
       method: "POST",
+      redirect: "follow",
       headers: { "Content-Type": "text/plain;charset=utf-8" },
       body: JSON.stringify({
-        origin: "kayityenileme",
+        origin: window.location.hostname,
         to: aliciEmail,
         toName: isim,
         subject: konu,
         htmlContent: htmlIcerik,
         replyTo: SCHOOL_EMAIL,
-        replyToName: "Bir Çiçek Koleji Anaokulu"
+        senderName: "Bir Çiçek Koleji Anaokulu",
+        senderEmail: SCHOOL_EMAIL
       })
     });
-    return true;
+    const sonuc = await response.json();
+    console.log("Brevo mail sonucu:", sonuc);
+    if (sonuc.success) return true;
+    console.error("Brevo API hatası:", sonuc.error || sonuc.detail);
+    return false;
   } catch(e) {
     console.warn("Mail gönderilemedi:", e);
     return false;
