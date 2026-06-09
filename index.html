@@ -1062,10 +1062,10 @@ input.price-input { font-size:22px; font-weight:600; font-family:'Playfair Displ
               Eşofman Takımı (2 alt+1 üst) · Pamuk Sweet · Polo Yaka T-Shirt · Penye T-Shirt · Şort+T-Shirt Takımı · Yağmurluk · Kirli Çantası
             </div>
             <div style="margin-top:6px; background:#FEF9E6; border:1px solid rgba(184,150,46,0.3); border-radius:8px; padding:6px 10px; font-size:11px; color:#B8962E; font-weight:600;">
-              ⭐ Avantajlı Ön Kayıt'ta %50 Bir Çiçek Desteği ile 7.500 TL
+              ⭐ Avantajlı Ön Kayıt ile 9.555 TL
             </div>
           </div>
-          <div class="diger-tutar" style="font-size:14px; color:var(--forest); font-weight:700;">15.000 TL</div>
+          <div class="diger-tutar" style="font-size:14px; color:var(--forest); font-weight:700;">14.700 TL</div>
         </div>
         <div class="diger-row">
           <div class="diger-info">
@@ -1461,8 +1461,8 @@ function updatePreview() {
 
   if (!val || val < 1000 || !valid) { if(preview) preview.style.display = "none"; return; }
 
-  // Program fark etmeksizin: veli ne ödüyorsa onun %28 artışı
-  let yeni = Math.round(val * 1.28);
+  // Program fark etmeksizin: veli ne ödüyorsa onun %28 artışı (en yakın 1.000 TL'ye yuvarlanır)
+  let yeni = Math.round(val * 1.28 / 1000) * 1000;
   if(preview) preview.style.display = "flex";
   if(previewVal) previewVal.textContent = fmt(yeni) + " TL";
   // Dönemsel önizleme
@@ -1479,8 +1479,8 @@ function updatePreview() {
 // ÖDEME HESAPLAMA
 // ═══════════════════════════════════════════════════════
 function hesapla(mevcutAylik, program) {
-  // Program fark etmeksizin: veli mevcut ücretine %28 artış uygulanır
-  let yeniAylik = Math.round(mevcutAylik * 1.28);
+  // Program fark etmeksizin: veli mevcut ücretine %28 artış uygulanır (en yakın 1.000 TL'ye yuvarlanır)
+  let yeniAylik = Math.round(mevcutAylik * 1.28 / 1000) * 1000;
 
   const egitim = Math.round(yeniAylik * 0.60);
   const yemek  = yeniAylik - egitim;
@@ -1751,7 +1751,7 @@ async function generatePDF(data) {
   doc.setTextColor(80,80,80); doc.setFontSize(8); doc.setFont(F,"normal");
   const diger = [
     ["5 Temmuz 2026","Eğitim Materyalleri","36.000 TL"],
-    ["5 Ağustos 2026","Bir Çiçek Koleji Okul Kıyafeti","15.000 TL (Ön Kayıt: 7.500 TL)"],
+    ["5 Ağustos 2026","Bir Çiçek Koleji Okul Kıyafeti","9.555 TL (Ön Kayıt avantajı uygulanmış — liste: 14.700 TL)"],
     ["5 Eylül 2026","Orman Okulu Kıyafeti","Eylül başında ilan edilecek"],
     ["5 Ekim 2026","Orman Okulu I. Dönem Servis","Ekim başında ilan edilecek"],
     ["5 Şubat 2027","Orman Okulu II. Dönem Servis","Şubat başında ilan edilecek"]
@@ -1886,7 +1886,7 @@ II. DÖNEM (Şubat - Haziran) — Aylık ${fmt(data.iiDonemAylik)} TL
 ${"─".repeat(50)}
 DİĞER ÖDEMELER:
   5 Temmuz 2026 - Eğitim Materyalleri: 36.000 TL
-  5 Ağustos 2026 - Bir Çiçek Koleji Okul Kıyafeti: 15.000 TL (Ön Kayıt: 7.500 TL)
+  5 Ağustos 2026 - Bir Çiçek Koleji Okul Kıyafeti: 9.555 TL (Ön Kayıt avantajı uygulanmış — liste: 14.700 TL)
   5 Eylül 2026  - Orman Okulu Kıyafeti: Eylül başında ilan edilecek
   5 Ekim 2026   - Orman Okulu I. Dönem Servis: Ekim başında ilan edilecek
   5 Şubat 2027  - Orman Okulu II. Dönem Servis: Şubat başında ilan edilecek
@@ -3045,7 +3045,7 @@ function hesaplaToplamKY(d) {
   }
   const mevcut = parseFloat(d.mevcutAylikUcret || d.currentFee || d.mevcutUcret || 0);
   if(mevcut > 0) {
-    const aylik = Math.round(mevcut * 1.28);
+    const aylik = Math.round(mevcut * 1.28 / 1000) * 1000;
     const kalan = aylik * 9;
     const i = Math.round((kalan * 0.488) / 5 / 100) * 100;
     const ii = Math.round((kalan - i * 5) / 5);
