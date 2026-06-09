@@ -9,7 +9,6 @@
 <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
 <style>
 :root {
@@ -1118,7 +1117,7 @@ input.price-input { font-size:22px; font-weight:600; font-family:'Playfair Displ
         </div>
         <div class="referans-step">
           <div class="step-num">3</div>
-          <div class="step-text"><strong>3. Kayıt:</strong> Eğitim Materyalleri ücretinin %50'si — <strong>düşülür!</strong></div>
+          <div class="step-text"><strong>3. Kayıt:</strong> Orman Okulu Kıyafeti ücreti — <strong>alınmaz!</strong></div>
         </div>
       </div>
     </div>
@@ -1229,8 +1228,8 @@ input.price-input { font-size:22px; font-weight:600; font-family:'Playfair Displ
         <div style="display:flex; gap:14px; align-items:center; background:white; border-radius:12px; padding:14px 16px; border:2px solid var(--amber); box-shadow:0 3px 12px rgba(196,136,10,0.12);">
           <div style="width:40px; height:40px; border-radius:50%; background:linear-gradient(135deg, var(--forest), var(--forest-mid)); display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0;">🎉</div>
           <div>
-            <div style="font-weight:700; color:var(--forest); font-size:14px;">Eğitim Materyalleri %50 İndirim!</div>
-            <div style="font-size:12px; color:var(--text-light); margin-top:2px;">Üçüncü kayıtta 36.000 TL'lik materyal ücretinin yarısı düşülür</div>
+            <div style="font-weight:700; color:var(--forest); font-size:14px;">Orman Okulu Kıyafeti Ücretsiz!</div>
+            <div style="font-size:12px; color:var(--text-light); margin-top:2px;">Üçüncü kayıtta Orman Okulu Kıyafeti ücreti alınmaz</div>
           </div>
         </div>
       </div>
@@ -1273,11 +1272,37 @@ const FIREBASE_CONFIG = {
   appId: "1:736581475783:web:5729a05ed4d05f1d1d0de2"
 };
 
-const EMAILJS_CONFIG = {
-  serviceId:  "BirCicek_Mail",
-  templateId: "template_7bi65w8",
-  publicKey:  "_VnABdAj03KuoOHYM"
-};
+// ═══════════════════════════════════════════════════════
+// BREVO MAIL (Apps Script Proxy — BCK_MailProxy)
+// ═══════════════════════════════════════════════════════
+const BREVO_PROXY_URL = "https://script.google.com/macros/s/AKfycbwUNvVhTCvxUKOMtbFJ4_UASBo8-sgT13qT_9tWeYKZR3IYaYKUhGdSaGgGaaqMaZLf/exec";
+
+// Tek merkezi mail fonksiyonu — düz metin mesajı HTML'e çevirip Brevo'ya yollar
+async function mailGonder(aliciEmail, konu, mesaj, aliciAdi) {
+  // İsim boş olmamalı (Brevo 400 hatası verir) — yoksa email'in @ öncesini kullan
+  const isim = (aliciAdi && aliciAdi.trim()) ? aliciAdi.trim() : aliciEmail.split("@")[0];
+  // Düz metni basit HTML'e çevir (satır sonları <br>)
+  const htmlIcerik = `<div style="font-family:Arial,sans-serif;font-size:14px;color:#2d2d2d;line-height:1.6;white-space:pre-wrap;">${mesaj.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")}</div>`;
+  try {
+    await fetch(BREVO_PROXY_URL, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify({
+        origin: "kayityenileme",
+        to: aliciEmail,
+        toName: isim,
+        subject: konu,
+        htmlContent: htmlIcerik,
+        replyTo: SCHOOL_EMAIL,
+        replyToName: "Bir Çiçek Koleji Anaokulu"
+      })
+    });
+    return true;
+  } catch(e) {
+    console.warn("Mail gönderilemedi:", e);
+    return false;
+  }
+}
 
 const SCHOOL_EMAIL = "eposta@bircicekkoleji.com";
 const ERKEN_KAYIT_SON_GUN = new Date("2026-06-15T23:59:59");
@@ -1862,22 +1887,24 @@ async function logGiris(user) {
       girisZamani: new Date().toISOString(),
       uid: user.uid
     });
+    // Aynı oturumda tek bildirim maili (spam önleme)
+    if(sessionStorage.getItem("girisMailGonderildi") === "1") return;
+    sessionStorage.setItem("girisMailGonderildi", "1");
     // Okul mailine bildirim
-    emailjs.init(EMAILJS_CONFIG.publicKey);
     const zaman = new Date().toLocaleString("tr-TR");
-    await emailjs.send(EMAILJS_CONFIG.serviceId, EMAILJS_CONFIG.templateId, {
-      to_email: SCHOOL_EMAIL,
-      cocuk_adi: "Sistem Girişi",
-      mesaj: `SİSTEM GİRİŞ BİLDİRİMİ\n---\nMail: ${user.email}\nAd: ${user.displayName || "Bilinmiyor"}\nZaman: ${zaman}\n---\nBu kullanıcı kayıt yenileme sistemine giriş yaptı. Kayıt tamamlanmadıysa takip edilebilir.`
-    });
+    await mailGonder(
+      SCHOOL_EMAIL,
+      "Sistem Girişi — Kayıt Yenileme",
+      `SİSTEM GİRİŞ BİLDİRİMİ\n---\nMail: ${user.email}\nAd: ${user.displayName || "Bilinmiyor"}\nZaman: ${zaman}\n---\nBu kullanıcı kayıt yenileme sistemine giriş yaptı. Kayıt tamamlanmadıysa takip edilebilir.`,
+      "Bir Çiçek Koleji"
+    );
   } catch(e) { console.log("Giriş takip hatası (önemsiz):", e); }
 }
 
 // ═══════════════════════════════════════════════════════
-// EMAİL GÖNDERME (EmailJS)
+// EMAİL GÖNDERME (Brevo)
 // ═══════════════════════════════════════════════════════
 async function sendEmail(data, pdfBase64) {
-  emailjs.init(EMAILJS_CONFIG.publicKey);
   const h = appState.hesaplama;
   const fatura = data.faturaIstegi ? "EVET - Fatura maile gönderilsin" : "Hayır";
 
@@ -1966,7 +1993,7 @@ ${odemeTablosu}
 REFERANS KODUNUZ: ${data.referansKodu}
 ─────────────────────────────────────────
 Bu kodu arkadaşlarınızla paylaşın! Her kayıt için sürpriz
-avantajlar kazanın — 3 kayıtta eğitim materyalleri ücretinin %50'si düşülür.
+avantajlar kazanın — 3 kayıtta Orman Okulu Kıyafeti ücreti alınmaz.
 
 ─────────────────────────────────────────
 
@@ -1999,18 +2026,20 @@ Tuzla Aydınlı, İstanbul
 eposta@bircicekkoleji.com`;
 
   // 1) Okul mailine gönder
-  await emailjs.send(EMAILJS_CONFIG.serviceId, EMAILJS_CONFIG.templateId, {
-    to_email: SCHOOL_EMAIL,
-    cocuk_adi: `${data.childFirstName} ${data.childLastName} — TEBRİKLER!`,
-    mesaj: okulMesaj
-  });
+  await mailGonder(
+    SCHOOL_EMAIL,
+    `🎉 Yeni Kayıt: ${data.childFirstName} ${data.childLastName}`,
+    okulMesaj,
+    "Bir Çiçek Koleji"
+  );
 
   // 2) Veliye teşekkür maili gönder
-  await emailjs.send(EMAILJS_CONFIG.serviceId, EMAILJS_CONFIG.templateId, {
-    to_email: data.email,
-    cocuk_adi: `${data.childFirstName} ${data.childLastName}`,
-    mesaj: veliMesaj
-  });
+  await mailGonder(
+    data.email,
+    "Kayıt Yenileme Başvurunuz Alındı — Bir Çiçek Koleji",
+    veliMesaj,
+    `${data.parentFirstName} ${data.parentLastName}`
+  );
 }
 
 // ═══════════════════════════════════════════════════════
@@ -2050,7 +2079,7 @@ async function loadHesapBilgileri() {
           <div style="font-size:13px; opacity:0.8; margin-top:8px;">Getirdiğiniz kayıt sayısı: <strong>${refSayi}/3</strong></div>
           ${refSayi >= 1 ? '<div style="font-size:12px; margin-top:4px; opacity:0.8;">✓ I. Dönem Servis ücreti — <strong>alınmaz!</strong></div>' : ''}
           ${refSayi >= 2 ? '<div style="font-size:12px; opacity:0.8;">✓ II. Dönem Servis ücreti — <strong>alınmaz!</strong></div>' : ''}
-          ${refSayi >= 3 ? '<div style="font-size:12px; opacity:0.8;">✓ Eğitim Materyalleri ücretinin %50\'si — <strong>düşülür!</strong></div>' : ''}
+          ${refSayi >= 3 ? '<div style="font-size:12px; opacity:0.8;">✓ Orman Okulu Kıyafeti ücreti — <strong>alınmaz!</strong></div>' : ''}
         </div>
       </div>`;
   } catch(e) { el.innerHTML = "Yükleme hatası: " + e.message; }
@@ -2190,7 +2219,7 @@ async function loadRefList() {
     snap.forEach(doc => {
       const d = doc.data();
       const say = d.kayitSayisi || 0;
-      const indirim = say >= 3 ? "🎉 Materyal %50 İndirim" : say >= 2 ? "✅ Servis I+II Bedava" : say >= 1 ? "✅ Servis I Bedava" : "—";
+      const indirim = say >= 3 ? "🎉 Orman Kıyafeti Bedava" : say >= 2 ? "✅ Servis I+II Bedava" : say >= 1 ? "✅ Servis I Bedava" : "—";
       const row = document.createElement("div");
       row.style.cssText = "padding:14px 20px; display:grid; grid-template-columns:1.5fr 1.5fr 0.5fr 0.5fr 0.5fr 1fr; gap:8px; border-bottom:1px solid var(--cream-dark); font-size:13px; align-items:center;";
       row.innerHTML = `
@@ -2219,14 +2248,13 @@ async function adminOnayla(docId, veliEmail, cocukAdi, refKodu) {
         const yeniSayi = (refDoc.data().kayitSayisi || 0) + 1;
         await refDoc.ref.update({ kayitSayisi: yeniSayi });
         // Referans velisine mail
-        emailjs.init(EMAILJS_CONFIG.publicKey);
         const siraMetni = yeniSayi === 1 ? "1. referans kaydınız onaylandı! I. Dönem Orman Okulu Servis ücretiniz alınmayacaktır." 
           : yeniSayi === 2 ? "2. referans kaydınız onaylandı! II. Dönem Orman Okulu Servis ücretiniz de alınmayacaktır."
-          : "3. referans kaydınız onaylandı! Eğitim Materyalleri ücretinizin %50'si düşülecektir. Tebrikler!";
-        await emailjs.send(EMAILJS_CONFIG.serviceId, EMAILJS_CONFIG.templateId, {
-          to_email: refDoc.data().email,
-          cocuk_adi: "Referans Güncelleme",
-          mesaj: `BİR ÇİÇEK KOLEJİ — REFERANS BİLDİRİMİ
+          : "3. referans kaydınız onaylandı! Orman Okulu Kıyafeti ücretiniz alınmayacaktır. Tebrikler!";
+        await mailGonder(
+          refDoc.data().email,
+          "Referans Bildirimi — Bir Çiçek Koleji",
+          `BİR ÇİÇEK KOLEJİ — REFERANS BİLDİRİMİ
 
 Sayın Velimiz,
 
@@ -2235,17 +2263,17 @@ ${siraMetni}
 Referans kodunuz: ${refKodu}
 
 Sevgi ve saygılarımızla,
-Bir Çiçek Koleji Anaokulu`
-        });
+Bir Çiçek Koleji Anaokulu`,
+          "Bir Çiçek Koleji Velisi"
+        );
       }
     }
     
     // Veliye onay maili
-    emailjs.init(EMAILJS_CONFIG.publicKey);
-    await emailjs.send(EMAILJS_CONFIG.serviceId, EMAILJS_CONFIG.templateId, {
-      to_email: veliEmail,
-      cocuk_adi: cocukAdi,
-      mesaj: `Sayın Velimiz,
+    await mailGonder(
+      veliEmail,
+      "Kaydınız Onaylandı — Bir Çiçek Koleji",
+      `Sayın Velimiz,
 
 ${cocukAdi} için yaptığınız kayıt yenileme başvurusu onaylanmıştır.
 
@@ -2253,8 +2281,9 @@ ${cocukAdi} için yaptığınız kayıt yenileme başvurusu onaylanmıştır.
 
 Sevgi ve saygılarımızla,
 Bir Çiçek Koleji Anaokulu
-eposta@bircicekkoleji.com`
-    });
+eposta@bircicekkoleji.com`,
+      cocukAdi
+    );
     
     hideLoading();
     showToast("✅ Başvuru onaylandı, veliye mail gönderildi!");
