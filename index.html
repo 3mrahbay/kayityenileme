@@ -996,25 +996,40 @@ input.price-input { font-size:22px; font-weight:600; font-family:'Playfair Displ
       <div class="hesap-sub">Aşağıdaki tablolar <span id="childNameDisplay">çocuğunuz</span> için hazırlanmıştır.</div>
     </div>
 
-    <!-- Aylık kart -->
-    <div class="aylık-card">
-      <div style="font-size:12px; text-transform:uppercase; letter-spacing:1px; color:rgba(255,255,255,0.6); margin-bottom:16px;">EĞİTİM ÜCRETİ ÖZETI</div>
-      <div class="aylik-row">
-        <div class="aylik-item">
-          <div class="aylik-item-label">Yeni Aylık Ücret</div>
-          <div class="aylik-item-val" id="yeniAylikDisplay">–</div>
-        </div>
-        <div class="aylik-item">
-          <div class="aylik-item-label">Artış Oranı</div>
-          <div class="aylik-item-val" style="color:#F0D490;">%28</div>
-        </div>
+    <!-- Ön Ödeme — büyük vurgulu kart -->
+    <div class="aylık-card" style="text-align:center;">
+      <div style="font-size:12px; text-transform:uppercase; letter-spacing:1px; color:rgba(255,255,255,0.7); margin-bottom:10px;">🔑 Kayıt Günü Ön Ödeme</div>
+      <div id="onOdemeBuyuk" style="font-size:44px; font-weight:800; line-height:1.1; font-family:'Playfair Display',serif;">–</div>
+      <div style="font-size:13px; color:rgba(255,255,255,0.75); margin-top:8px;">Kaydınız bu ödemeyle kesinleşir</div>
+    </div>
+
+    <!-- Ön ödemeden sonra aylık taksitler — vurgulu -->
+    <div style="margin:18px 0 8px 0; text-align:center; font-size:14px; font-weight:600; color:var(--forest);">
+      Ön ödemeden sonra ödeyeceğiniz aylık taksitler
+    </div>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+      <div style="background:#EBF4E8; border:1.5px solid #C8E0C4; border-radius:16px; padding:18px 14px; text-align:center;">
+        <div style="font-size:11px; color:#5A7A55; font-weight:600; margin-bottom:6px;">I. DÖNEM<br><span style="font-weight:400;">Eylül – Ocak</span></div>
+        <div style="font-size:12px; color:var(--text-light);">aylık</div>
+        <div id="iDonemBuyuk" style="font-size:26px; font-weight:800; color:var(--forest); font-family:'Playfair Display',serif; line-height:1.2;">–</div>
       </div>
-      <div class="aylik-breakdown">
-        <div class="aylik-br-item"><span>Eğitim Ücreti</span><strong id="egitimDisplay">–</strong></div>
-        <div class="aylik-br-item"><span>Yemek Ücreti</span><strong id="yemekDisplay">–</strong></div>
-        <div class="aylik-br-item"><span>I. Dönem Aylık</span><strong id="iDonemDisplay">–</strong></div>
-        <div class="aylik-br-item"><span>II. Dönem Aylık</span><strong id="iiDonemDisplay">–</strong></div>
+      <div style="background:#FEF9E6; border:1.5px solid rgba(184,150,46,0.35); border-radius:16px; padding:18px 14px; text-align:center;">
+        <div style="font-size:11px; color:#96762E; font-weight:600; margin-bottom:6px;">II. DÖNEM<br><span style="font-weight:400;">Şubat – Haziran</span></div>
+        <div style="font-size:12px; color:var(--text-light);">aylık</div>
+        <div id="iiDonemBuyuk" style="font-size:26px; font-weight:800; color:#B8962E; font-family:'Playfair Display',serif; line-height:1.2;">–</div>
       </div>
+    </div>
+
+    <!-- Küçük özet: yeni aylık + artış (bilgi amaçlı) -->
+    <div style="display:flex; justify-content:center; gap:24px; margin-top:14px; font-size:12px; color:var(--text-light);">
+      <span>Yeni aylık ücret: <strong id="yeniAylikDisplay" style="color:var(--text-mid);">–</strong></span>
+      <span>Artış: <strong style="color:var(--text-mid);">%28</strong></span>
+    </div>
+    <!-- Gizli alanlar (JS uyumluluğu için) -->
+    <div style="display:none;">
+      <span id="egitimDisplay">–</span><span id="yemekDisplay">–</span>
+      <span id="iDonemDisplay">–</span><span id="iiDonemDisplay">–</span>
+      <span id="onOdemeDisplay">–</span>
     </div>
 
     <!-- Tabs -->
@@ -1040,6 +1055,9 @@ input.price-input { font-size:22px; font-weight:600; font-family:'Playfair Displ
         <div id="iDonemRows"></div>
         <div class="odeme-row header-row"><div colspan="3">II. Dönem — Şubat · Mart · Nisan · Mayıs · Haziran</div></div>
         <div id="iiDonemRows"></div>
+      </div>
+      <div style="text-align:center; margin-top:12px; font-size:12px; color:var(--text-light);">
+        Eğitim ücreti yıllık toplam (ön ödeme + 10 taksit): <strong id="yillikToplamKucuk" style="color:var(--text-mid); font-weight:600;">–</strong>
       </div>
     </div>
 
@@ -1601,6 +1619,11 @@ function renderHesaplama() {
   if(el("iDonemDisplay"))    el("iDonemDisplay").textContent    = fmt(h.iDonemAylik)  + " TL";
   if(el("iiDonemDisplay"))   el("iiDonemDisplay").textContent   = fmt(h.iiDonemAylik) + " TL";
   if(el("onOdemeDisplay"))   el("onOdemeDisplay").textContent   = fmt(h.onOdeme) + " TL";
+  // Yeni vurgulu alanlar
+  if(el("onOdemeBuyuk"))     el("onOdemeBuyuk").textContent     = fmt(h.onOdeme) + " TL";
+  if(el("iDonemBuyuk"))      el("iDonemBuyuk").textContent      = fmt(h.iDonemAylik) + " TL";
+  if(el("iiDonemBuyuk"))     el("iiDonemBuyuk").textContent     = fmt(h.iiDonemAylik) + " TL";
+  if(el("yillikToplamKucuk")) el("yillikToplamKucuk").textContent = fmt(h.yillikToplam) + " TL";
 
   // Dönem satırları
   const renderRows = (containerId, odemeler, renk) => {
@@ -1746,15 +1769,35 @@ async function generatePDF(data) {
   });
   y += 4;
 
-  // ── ÜCRET ÖZETİ ──
-  doc.setFillColor(235,244,232); doc.roundedRect(mL, y-3, cW, 24, 2, 2, "F");
+  // ── ÖN ÖDEME — büyük vurgulu kutu ──
+  doc.setFillColor(42,94,34); doc.roundedRect(mL, y-3, cW, 20, 3, 3, "F");
+  doc.setFont(F,"normal"); doc.setTextColor(255,255,255); doc.setFontSize(9);
+  doc.text("Kayıt Günü Ön Ödeme", mL+7, y+5);
+  doc.setFont(F,"bold"); doc.setFontSize(19);
+  doc.text(fmt(data.onOdeme)+" TL", mL+7, y+14);
+  doc.setFont(F,"normal"); doc.setFontSize(8);
+  doc.text("Kaydınız bu ödemeyle kesinleşir", 112, y+5);
+  doc.text("Ödeme tercihi: "+(data.odemeTercihi||"-"), 112, y+11);
+  y += 26;
+
+  // ── ÖN ÖDEMEDEN SONRA AYLIK — iki vurgulu kutu ──
   doc.setFont(F,"bold"); doc.setTextColor(42,94,34); doc.setFontSize(10);
-  doc.text("Ücret Özeti", mL+5, y+4);
-  doc.setFont(F,"normal"); doc.setFontSize(9);
-  doc.text("Mevcut Aylık: "+fmt(data.mevcutAylikUcret)+" TL", mL+5, y+11);
-  doc.text("Yeni Aylık (%28 Artış): "+fmt(data.yeniAylikUcret)+" TL", mL+5, y+17);
-  doc.text("Ön Ödeme (Kayıt Günü): "+fmt(data.onOdeme)+" TL", 112, y+11);
-  doc.text("Ödeme Tercihi: "+(data.odemeTercihi||"-"), 112, y+17);
+  doc.text("Ön ödemeden sonra ödeyeceğiniz aylık taksitler:", mL, y+2);
+  y += 7;
+  const kutuW = (cW - 6) / 2;
+  // I. Dönem kutusu
+  doc.setFillColor(235,244,232); doc.roundedRect(mL, y, kutuW, 22, 3, 3, "F");
+  doc.setFont(F,"normal"); doc.setTextColor(60,90,55); doc.setFontSize(8);
+  doc.text("I. Dönem (Eylül–Ocak)", mL+5, y+6);
+  doc.setFont(F,"bold"); doc.setTextColor(42,94,34); doc.setFontSize(16);
+  doc.text("aylık "+fmt(data.iDonemAylik)+" TL", mL+5, y+15);
+  // II. Dönem kutusu
+  const x2 = mL + kutuW + 6;
+  doc.setFillColor(252,248,238); doc.roundedRect(x2, y, kutuW, 22, 3, 3, "F");
+  doc.setFont(F,"normal"); doc.setTextColor(150,110,20); doc.setFontSize(8);
+  doc.text("II. Dönem (Şubat–Haziran)", x2+5, y+6);
+  doc.setFont(F,"bold"); doc.setTextColor(180,130,10); doc.setFontSize(16);
+  doc.text("aylık "+fmt(data.iiDonemAylik)+" TL", x2+5, y+15);
   y += 30;
 
   // ── ÖDEME TAKVİMİ ──
@@ -1786,11 +1829,7 @@ async function generatePDF(data) {
     y += 6.5;
   });
 
-  // Toplam satırı
-  doc.setFillColor(42,94,34); doc.rect(mL, y-3, cW, 7, "F");
-  doc.setTextColor(255,255,255); doc.setFont(F,"bold"); doc.setFontSize(9);
-  doc.text("TOPLAM", mL+4, y+1.5); doc.text(fmt(data.yillikToplam)+" TL", 158, y+1.5);
-  y += 12;
+  y += 5;
 
   // ── DİĞER ÖDEMELER ──
   doc.setTextColor(42,94,34); doc.setFontSize(11); doc.setFont(F,"bold");
@@ -1818,6 +1857,11 @@ async function generatePDF(data) {
   doc.text(data.referansKodu||"BCK-????", mL+58, y+7);
   doc.setFont(F,"normal"); doc.setFontSize(8);
   doc.text("Bu kodu sevdiklerinizle paylaşın, avantajlar kazanın!", mL+6, y+14);
+  y += 24;
+
+  // ── YILLIK TOPLAM (küçük, gri — bilgi amaçlı) ──
+  doc.setFont(F,"normal"); doc.setTextColor(155,155,155); doc.setFontSize(8);
+  doc.text("Eğitim ücreti yıllık toplam (ön ödeme + 10 taksit): "+fmt(data.yillikToplam)+" TL", mL+3, y);
 
   // ── FOOTER ──
   doc.setDrawColor(200,200,200); doc.line(mL, 280, mR, 280);
