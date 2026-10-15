@@ -1295,6 +1295,14 @@ const FIREBASE_CONFIG = {
 // ═══════════════════════════════════════════════════════
 const BREVO_PROXY_URL = "https://script.google.com/macros/s/AKfycbwUNvVhTCvxUKOMtbFJ4_UASBo8-sgT13qT_9tWeYKZR3IYaYKUhGdSaGgGaaqMaZLf/exec";
 
+// Mail proxy'si okul dışı alıcılarda gönderenin Firebase oturumunu doğrular.
+async function mailOturumJetonu() {
+  try {
+    var a = (typeof auth !== "undefined" && auth) ? auth : (window.firebase && firebase.auth ? firebase.auth() : null);
+    return a && a.currentUser ? String((await a.currentUser.getIdToken()) || "") : "";
+  } catch (e) { return ""; }
+}
+
 // Tek merkezi mail fonksiyonu — düz metin mesajı HTML'e çevirip Brevo'ya yollar
 async function mailGonder(aliciEmail, konu, mesaj, aliciAdi) {
   // İsim boş olmamalı (Brevo 400 hatası verir) — yoksa email'in @ öncesini kullan
@@ -1308,6 +1316,7 @@ async function mailGonder(aliciEmail, konu, mesaj, aliciAdi) {
       headers: { "Content-Type": "text/plain;charset=utf-8" },
       body: JSON.stringify({
         origin: window.location.hostname,
+        idToken: await mailOturumJetonu(),
         to: aliciEmail,
         toName: isim,
         subject: konu,
