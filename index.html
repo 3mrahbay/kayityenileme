@@ -651,12 +651,12 @@ input.price-input { font-size:22px; font-weight:600; font-family:'Playfair Displ
     </nav>
 
     <div class="hero-content">
-      <div class="hero-badge">✨ 2026-2027 Avantajlı Erken Kayıt Dönemi Açıldı</div>
+      <div class="hero-badge">🌿 2026–2027 kayıt yenileme dönemi tamamlandı</div>
       <h1 class="hero-title">Çocuğunuzun<br><em>büyüme yolculuğu</em><br>devam ediyor</h1>
-      <p class="hero-subtitle">Mevcut velilerimiz için özel kayıt yenileme sistemi. Google hesabınızla güvenli giriş yapın, ödeme planınızı görüntüleyin ve avantajlı erken kayıt imkanından faydalanmak için 15 Haziran'tan önce kaydınızı tamamlayın.</p>
+      <p class="hero-subtitle">Mevcut velilerimiz için kayıt yenileme sistemi. 2026–2027 kayıt yenileme dönemi tamamlandı; Google hesabınızla giriş yaparak ödeme planınızı ve hesap bilgilerinizi görebilirsiniz. 2027–2028 kayıt yenileme dönemi başladığında buradan duyuracağız.</p>
 
-      <!-- Countdown -->
-      <div class="countdown-box">
+      <!-- Countdown (dönem kapalıyken gizli) -->
+      <div class="countdown-box" style="display:none;">
         <div style="text-align:center;">
           <div class="countdown-num" id="cdDays">00</div>
           <div class="countdown-label">Gün</div>
@@ -767,8 +767,8 @@ input.price-input { font-size:22px; font-weight:600; font-family:'Playfair Displ
 
   <!-- CTA BOTTOM -->
   <div class="cta-bottom">
-    <h2>Yerinizi 15 Haziran'a Kadar Garantileyin</h2>
-    <p>Bu sayfa mevcut velilerimizin avantajlı kayıt fırsatından yararlanmaları için hazırlanmıştır.</p>
+    <h2>Ödeme planınıza ve hesap bilgilerinize ulaşın</h2>
+    <p>Kayıtlı velilerimiz Google hesabıyla giriş yaparak ödeme planlarını ve hesap bilgilerini görebilir. Bilgileriniz <a href="kvkk.html" style="color:inherit;">KVKK aydınlatma metnimizde</a> açıklanan amaçlarla işlenir.</p>
     <button class="btn-primary" onclick="signInWithGoogle()">
       🌸 Kayıt Yenileme Sistemine Gir
     </button>
@@ -798,7 +798,7 @@ input.price-input { font-size:22px; font-weight:600; font-family:'Playfair Displ
     <div class="welcome-card">
       <div class="welcome-name">Hoş Geldiniz! 🌸</div>
       <div class="welcome-sub" id="welcomeEmail">–</div>
-      <div class="deadline-pill">⏰ Avantajlı Erken Kayıt: 15 Haziran 2026'ya kadar</div>
+      <div class="deadline-pill">📌 2026–2027 kayıt yenileme dönemi tamamlandı</div>
       
       <div style="margin-top:16px; background:rgba(255,255,255,0.08); border-radius:14px; padding:18px 20px; font-size:14px; color:rgba(255,255,255,0.92); line-height:1.75;">
         <div style="font-family:'Playfair Display',serif; font-size:17px; font-weight:700; color:white; margin-bottom:6px;">2026–2027 Eğitim Öğretim Yılı Kayıt Yenileme Duyurusu</div>
@@ -814,7 +814,7 @@ input.price-input { font-size:22px; font-weight:600; font-family:'Playfair Displ
           <div style="margin-top:10px;">İşte tam da bu nedenle, çocuklarımızın bu güvenli ve nitelikli eğitim yolculuğuna aynı istikrarla devam edebilmesi adına, <strong style="color:white;">2026–2027 eğitim öğretim yılı kayıt yenileme sürecimizi başlatmış bulunuyoruz.</strong></div>
           
           <div style="margin-top:18px; background:rgba(255,255,255,0.1); border-radius:10px; padding:14px 16px;">
-            <div style="font-weight:700; color:white; margin-bottom:8px;">🎯 Erken Kayıt Avantajı — 15 Haziran 2026'ya kadar!</div>
+            <div style="font-weight:700; color:white; margin-bottom:8px;">🎯 2026–2027 ödeme planımız</div>
             <div style="margin-top:8px;">Eğitim kalitesinden ödün vermeden, ailelerimizin ekonomik planlamasını da hassasiyetle gözeten bir yaklaşım benimsemeye devam ediyoruz.</div>
             <div style="margin-top:10px;">📋 Bildiğiniz üzere Milli Eğitim Bakanlığı'nın 2026–2027 eğitim ve öğretim dönemi için belirlediği artış oranı <strong style="color:white;">%43,92</strong>'dir. Ancak biz, mevcut ailelerimize destek olabilmek adına, bu oranı <strong style="color:white;">%28 artış</strong> ile sınırlandırma kararı aldık.</div>
             <div style="margin-top:10px;">Bununla birlikte ödeme planlamamızı da ailelerimizin yaşam gerçekliğini dikkate alarak yapılandırdık:</div>
@@ -833,11 +833,11 @@ input.price-input { font-size:22px; font-weight:600; font-family:'Playfair Displ
     </div>
 
     <div class="action-cards">
-      <div class="action-card recommended" onclick="goToScreen('screen-mevcut-form')">
+      <div class="action-card recommended" id="kayitYenilemeKart" onclick="goToScreen('screen-mevcut-form')">
         <div style="flex:1">
           <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
             <div class="action-title">Kayıt Yenileme</div>
-            <div class="action-badge">Önerilen</div>
+            <div class="action-badge" id="kayitYenilemeRozet">Önerilen</div>
           </div>
           <div class="action-desc">Mevcut aylık ücretinizi girin, %28 artışla yeni döneminizi hesaplayın ve ödeme planınızı görüntüleyin.</div>
         </div>
@@ -1201,6 +1201,7 @@ input.price-input { font-size:22px; font-weight:600; font-family:'Playfair Displ
       <button class="btn-back" onclick="goToScreen('screen-mevcut-form')">← Düzenle</button>
       <button class="btn-save" id="btnSave" onclick="kaydet()">🌸 Kaydı Tamamla ve Gönder</button>
     </div>
+    <p style="font-size:12px; color:var(--text-light); margin-top:12px; line-height:1.6;">🔒 Bilgileriniz <a href="kvkk.html" target="_blank" rel="noopener" style="color:var(--forest);">KVKK aydınlatma metnimizde</a> açıklanan amaçlarla, yalnızca okul yönetimi tarafından işlenir.</p>
   </div>
 </div>
 
@@ -1379,7 +1380,27 @@ let appState = {
 // ═══════════════════════════════════════════════════════
 // SCREEN NAVIGATION
 // ═══════════════════════════════════════════════════════
+// Kayıt yenileme dönemi açık mı? Yeni dönem başladığında true yapın.
+const KAYIT_YENILEME_ACIK = false;
+const KAYIT_KAPALI_MESAJ = "2026–2027 kayıt yenileme dönemi tamamlandı. Sorularınız için okul yönetimine ulaşabilirsiniz: 0216 393 54 57";
+function kayitDonemKontrol() {
+  const kart = document.getElementById("kayitYenilemeKart");
+  const rozet = document.getElementById("kayitYenilemeRozet");
+  if (!KAYIT_YENILEME_ACIK && kart) {
+    kart.classList.remove("recommended");
+    kart.style.opacity = "0.6";
+    if (rozet) rozet.textContent = "Dönem kapandı";
+    const desc = kart.querySelector(".action-desc");
+    if (desc) desc.textContent = "2026–2027 kayıt yenileme dönemi tamamlandı. Yeni dönem başladığında buradan kayıt yenileyebilirsiniz.";
+  }
+}
+document.addEventListener("DOMContentLoaded", kayitDonemKontrol);
+
 function goToScreen(id) {
+  if (!KAYIT_YENILEME_ACIK && (id === "screen-mevcut-form" || id === "screen-hesaplama") && !(typeof currentUser !== "undefined" && currentUser && currentUser.email === ADMIN_EMAIL)) {
+    showToast(KAYIT_KAPALI_MESAJ);
+    return;
+  }
   document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
   const el = document.getElementById(id);
   if (el) { el.classList.add("active"); window.scrollTo(0,0); }
@@ -1679,6 +1700,7 @@ function showTab(tabId) {
 // KAYDET → FİRESTORE + EMAİL
 // ═══════════════════════════════════════════════════════
 async function kaydet() {
+  if (!KAYIT_YENILEME_ACIK && !(currentUser && currentUser.email === ADMIN_EMAIL)) { showToast(KAYIT_KAPALI_MESAJ); return; }
   if (!currentUser) return showToast("Lütfen önce giriş yapınız");
   if (!appState.hesaplama) return;
 
